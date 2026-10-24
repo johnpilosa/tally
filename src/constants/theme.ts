@@ -7,21 +7,21 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+// La app es solo oscura, al estilo del modo oscuro de Nothing OS: negro puro, blanco y grises.
+const NothingDark = {
+  text: '#FFFFFF',
+  background: '#000000',
+  backgroundElement: '#111111',
+  backgroundSelected: '#1C1C1C',
+  textSecondary: '#8A8A8A',
+  border: '#2A2A2A',
+  /** El rojo de Nothing. Úsalo poco: un punto, un detalle. */
+  accent: '#D71921',
+} as const;
+
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
+  light: NothingDark,
+  dark: NothingDark,
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
@@ -50,6 +50,14 @@ export const Fonts = Platform.select({
     mono: 'var(--font-mono)',
   },
 });
+
+/** Fuentes cargadas en src/app/_layout.tsx. Doto es de matriz de puntos, como la de Nothing. */
+export const Type = {
+  dot: 'Doto_900Black',
+  dotLight: 'Doto_700Bold',
+  mono: 'SpaceMono_400Regular',
+  monoBold: 'SpaceMono_700Bold',
+} as const;
 
 export const Spacing = {
   half: 2,
