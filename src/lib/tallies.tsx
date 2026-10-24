@@ -28,6 +28,8 @@ type TallyStore = {
   undo: (id: string) => void;
   select: (id: string) => void;
   updateTally: (id: string, changes: Partial<Pick<Tally, 'name' | 'icon'>>) => void;
+  /** Mueve un contador a otra posición de la lista (para reordenar arrastrando). */
+  moveTally: (id: string, toIndex: number) => void;
   removeTally: (id: string) => void;
 };
 
@@ -88,6 +90,15 @@ export function TallyProvider({ children }: { children: ReactNode }) {
     undo: (id) => update(id, (t) => ({ ...t, events: t.events.slice(0, -1) })),
     select: setLastUsedId,
     updateTally: (id, changes) => update(id, (t) => ({ ...t, ...changes })),
+    moveTally: (id, toIndex) =>
+      setTallies((prev) => {
+        const from = prev.findIndex((t) => t.id === id);
+        if (from < 0 || from === toIndex) return prev;
+        const next = [...prev];
+        const [moved] = next.splice(from, 1);
+        next.splice(toIndex, 0, moved);
+        return next;
+      }),
     removeTally: (id) => setTallies((prev) => prev.filter((t) => t.id !== id)),
   };
 

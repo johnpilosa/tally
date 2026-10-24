@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -17,20 +16,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SwitchTally } from '@/animations/config';
 import { AnimatedCount } from '@/components/animated-count';
 import { CounterButton } from '@/components/counter-button';
+import { TallyChips } from '@/components/tally-chips';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useNow } from '@/hooks/use-now';
 import { useTallies } from '@/lib/tallies';
-import { countSince, formatAgo, todayStart } from '@/lib/time';
+import { countSince, formatDate, todayStart } from '@/lib/time';
 
 const C = Colors.dark;
 
 export default function HomeScreen() {
-  const { tallies, loaded, current, increment, undo, select } = useTallies();
+  const { tallies, loaded, current, increment, undo, select, moveTally } = useTallies();
   const now = useNow();
   const [adding, setAdding] = useState(false);
 
   if (!loaded) return <View style={styles.screen} />;
 
+  const first = current?.events[0];
   const last = current?.events.at(-1);
   const today = current ? countSince(current.events, todayStart(now)) : 0;
 
@@ -73,7 +74,9 @@ export default function HomeScreen() {
                 </Pressable>
                 <AnimatedCount value={current.events.length} style={styles.count} />
                 <Text style={styles.meta}>
-                  {last ? `HOY ${today}  ·  ${formatAgo(last, now).toUpperCase()}` : 'SIN MARCAS'}
+                  {first
+                    ? `HOY ${today}  ·  DESDE ${formatDate(first, now).toUpperCase()}`
+                    : 'SIN MARCAS'}
                 </Text>
               </View>
 
@@ -101,29 +104,13 @@ export default function HomeScreen() {
           {adding || !current ? (
             <NewTallyInput onDone={() => setAdding(false)} canCancel={!!current} />
           ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.chipsScroll}
-              contentContainerStyle={styles.chips}>
-              {tallies.map((t) => {
-                const active = t.id === current.id;
-                return (
-                  <Pressable
-                    key={t.id}
-                    onPress={() => select(t.id)}
-                    style={[styles.chip, active && styles.chipActive]}>
-                    {active && <View style={styles.dot} />}
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                      {t.name.toUpperCase()} {t.events.length}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-              <Pressable onPress={() => setAdding(true)} style={styles.chip}>
-                <Text style={styles.chipText}>+ NUEVO</Text>
-              </Pressable>
-            </ScrollView>
+            <TallyChips
+              tallies={tallies}
+              currentId={current.id}
+              onSelect={select}
+              onMove={moveTally}
+              onAdd={() => setAdding(true)}
+            />
           )}
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -203,22 +190,6 @@ const styles = StyleSheet.create({
   count: { fontFamily: Type.dot, fontSize: 96, lineHeight: 104, color: C.text },
   meta: { fontFamily: Type.mono, fontSize: 11, color: C.textSecondary, letterSpacing: 1 },
   emptyTitle: { fontFamily: Type.dot, fontSize: 32, color: C.text, textAlign: 'center' },
-  chipsScroll: { flexGrow: 0 },
-  chips: { gap: Spacing.two, paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    borderWidth: 1,
-    borderColor: C.border,
-    borderRadius: 999,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
-  chipActive: { borderColor: C.text },
-  chipText: { fontFamily: Type.mono, fontSize: 12, color: C.textSecondary },
-  chipTextActive: { color: C.text },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.accent },
   addRow: {
     flexDirection: 'row',
     alignItems: 'center',

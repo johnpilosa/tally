@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Colors, Type } from '@/constants/theme';
 import { TallyProvider } from '@/lib/tallies';
@@ -30,20 +31,22 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider value={theme}>
-      <TallyProvider>
-        <Stack
-          screenOptions={{
-            headerShadowVisible: false,
-            headerTintColor: Colors.dark.text,
-            headerTitleStyle: { fontFamily: Type.mono, fontSize: 14 },
-            contentStyle: { backgroundColor: Colors.dark.background },
-          }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="tally/[id]" options={{ title: '' }} />
-          <Stack.Screen name="edit/[id]" options={{ title: 'EDITAR', presentation: 'modal' }} />
-        </Stack>
-      </TallyProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider value={theme}>
+        <TallyProvider>
+          <Stack
+            screenOptions={{
+              headerShadowVisible: false,
+              headerTintColor: Colors.dark.text,
+              headerTitleStyle: { fontFamily: Type.mono, fontSize: 14 },
+              contentStyle: { backgroundColor: Colors.dark.background },
+            }}>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="tally/[id]" options={{ title: '' }} />
+            <Stack.Screen name="edit/[id]" options={{ title: 'EDITAR', presentation: 'modal' }} />
+          </Stack>
+        </TallyProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

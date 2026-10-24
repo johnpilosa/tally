@@ -23,6 +23,13 @@ export function formatDay(ts: number, now = Date.now()) {
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }
 
+/** "25 oct", o "25 oct 2025" si no es de este año. */
+export function formatDate(ts: number, now = Date.now()) {
+  const d = new Date(ts);
+  const date = `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  return d.getFullYear() === new Date(now).getFullYear() ? date : `${date} ${d.getFullYear()}`;
+}
+
 /** "recién", "hace 5 min", "hace 3 h", "ayer 14:30", "12 oct". */
 export function formatAgo(ts: number, now = Date.now()) {
   const mins = Math.floor((now - ts) / 60000);

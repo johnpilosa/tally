@@ -113,3 +113,15 @@ export const StarDestroyer = {
   flashDuration: 450,
   flashMaxScale: 2.2,
 };
+
+/* ─────────────────────────── LISTA DE CONTADORES ─────────────────────────── */
+
+/** Reordenar los contadores de abajo: mantener presionado uno y arrastrarlo. */
+export const ChipDrag = {
+  /** Cuánto hay que mantener presionado antes de poder arrastrar, en milisegundos. */
+  longPress: 300,
+  /** Cuánto crece el contador que estás arrastrando. */
+  liftScale: 1.08,
+  /** Cuánto tardan los demás en correrse para hacerle espacio. */
+  shiftDuration: 150,
+};
