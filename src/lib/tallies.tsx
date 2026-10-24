@@ -1,10 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
+import type { IconId } from '@/icons';
+
 export type Tally = {
   id: string;
   name: string;
   color: string;
+  /** El ícono animado del botón. Los contadores viejos no lo tienen y usan el auto. */
+  icon?: IconId;
   /** Timestamps (ms) de cada vez que se marcó, del más viejo al más nuevo. */
   events: number[];
 };
@@ -23,6 +27,7 @@ type TallyStore = {
   increment: (id: string) => void;
   undo: (id: string) => void;
   select: (id: string) => void;
+  updateTally: (id: string, changes: Partial<Pick<Tally, 'name' | 'icon'>>) => void;
   removeTally: (id: string) => void;
 };
 
@@ -82,6 +87,7 @@ export function TallyProvider({ children }: { children: ReactNode }) {
     },
     undo: (id) => update(id, (t) => ({ ...t, events: t.events.slice(0, -1) })),
     select: setLastUsedId,
+    updateTally: (id, changes) => update(id, (t) => ({ ...t, ...changes })),
     removeTally: (id) => setTallies((prev) => prev.filter((t) => t.id !== id)),
   };
 

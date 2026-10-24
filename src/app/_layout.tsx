@@ -41,6 +41,7 @@ export default function RootLayout() {
           }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="tally/[id]" options={{ title: '' }} />
+          <Stack.Screen name="edit/[id]" options={{ title: 'EDITAR', presentation: 'modal' }} />
         </Stack>
       </TallyProvider>
     </ThemeProvider>

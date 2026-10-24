@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SwitchTally } from '@/animations/config';
 import { AnimatedCount } from '@/components/animated-count';
-import { RoundaboutButton } from '@/components/roundabout-button';
+import { CounterButton } from '@/components/counter-button';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useNow } from '@/hooks/use-now';
 import { useTallies } from '@/lib/tallies';
@@ -61,16 +61,24 @@ export default function HomeScreen() {
               entering={FadeIn.duration(SwitchTally.duration)}
               style={styles.center}>
               <View style={styles.titleBlock}>
-                <Text style={styles.name} numberOfLines={1}>
-                  {current.name}
-                </Text>
+                <Pressable
+                  hitSlop={12}
+                  onPress={() => router.push(`/edit/${current.id}`)}
+                  accessibilityLabel="Editar contador"
+                  style={styles.nameRow}>
+                  <Text style={styles.name} numberOfLines={1}>
+                    {current.name}
+                  </Text>
+                  <Text style={styles.editHint}>✎</Text>
+                </Pressable>
                 <AnimatedCount value={current.events.length} style={styles.count} />
                 <Text style={styles.meta}>
                   {last ? `HOY ${today}  ·  ${formatAgo(last, now).toUpperCase()}` : 'SIN MARCAS'}
                 </Text>
               </View>
 
-              <RoundaboutButton
+              <CounterButton
+                icon={current.icon}
                 onPress={onCount}
                 accessibilityLabel={`Sumar uno a ${current.name}`}
               />
@@ -183,6 +191,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
   },
   titleBlock: { alignItems: 'center', gap: Spacing.one },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  editHint: { fontSize: 13, color: C.textSecondary },
   name: {
     fontFamily: Type.mono,
     fontSize: 14,
