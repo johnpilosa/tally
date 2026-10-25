@@ -4,12 +4,15 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Overlay } from '@/animations/config';
 import { popIn } from '@/animations/presets';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useI18n } from '@/lib/i18n';
 
 const C = Colors.dark;
+/** Margen interno de cada opción del menú. */
+const ITEM_PADDING = Spacing.three;
 
 /** Las "apps" dentro de la app. Para agregar otra: súmala aquí y su nombre en `apps` de i18n. */
 const APPS = [
@@ -50,17 +53,16 @@ export function AppSwitcher({ current }: { current: AppId }) {
           {APPS.map((app, i) => {
             const active = app.id === current;
             return (
-              <Animated.View key={app.id} entering={popIn({ direction: -1, index: i })}>
+              <Animated.View
+                key={app.id}
+                entering={popIn({ direction: -1, index: i, stagger: Overlay.enter.oneByOne })}>
                 <Pressable
                   onPress={() => go(app.id, app.route)}
                   style={({ pressed }) => [styles.item, pressed && { opacity: 0.6 }]}>
-                  <View style={styles.itemTitleRow}>
-                    {active && <View style={styles.dot} />}
-                    <Text style={[styles.itemName, !active && styles.itemNameInactive]}>
-                      {t.apps[app.id].name}
-                    </Text>
-                  </View>
-                  <Text style={styles.itemHint}>{t.apps[app.id].hint}</Text>
+                  <Text style={[styles.brand, !active && styles.inactive]}>
+                    {t.apps[app.id].name}
+                  </Text>
+                  {active && <View style={styles.dot} />}
                 </Pressable>
               </Animated.View>
             );
@@ -75,24 +77,24 @@ const styles = StyleSheet.create({
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   brand: { fontFamily: Type.dot, fontSize: 20, color: C.text, letterSpacing: 2 },
   caret: { fontFamily: Type.mono, fontSize: 12, color: C.textSecondary },
+  // El menú queda justo bajo el nombre, con el texto de cada opción alineado al de arriba.
   menu: {
     position: 'absolute',
-    left: Layout.gutter,
-    right: Layout.gutter,
-    maxWidth: 360,
+    left: Layout.gutter - ITEM_PADDING,
+    alignItems: 'flex-start',
     gap: Spacing.two,
   },
   item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
     borderWidth: 1,
     borderColor: C.border,
-    borderRadius: Spacing.four,
+    borderRadius: 999,
     backgroundColor: C.background,
-    padding: Spacing.four,
-    gap: Spacing.one,
+    paddingHorizontal: ITEM_PADDING,
+    paddingVertical: Spacing.two + 2,
   },
-  itemTitleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  itemName: { fontFamily: Type.dot, fontSize: 28, color: C.text, letterSpacing: 2 },
-  itemNameInactive: { color: C.textSecondary },
-  itemHint: { fontFamily: Type.mono, fontSize: 11, color: C.textSecondary, letterSpacing: 1 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.accent },
+  inactive: { color: C.textSecondary },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.accent },
 });

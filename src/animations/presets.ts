@@ -12,10 +12,15 @@ const snappy = Easing.bezier(0.2, 0.8, 0.2, 1);
 /**
  * Aparece deslizándose un poco y creciendo apenas, mientras se hace visible.
  * `direction: -1` hace que baje desde arriba (para menús que cuelgan de un botón).
- * `index` suma un pequeño retraso para que las opciones de un menú entren en cascada.
+ * `index` suma un pequeño retraso para que las opciones de un menú entren en cascada;
+ * `stagger` cambia cuánto se espera entre una y otra.
  */
-export function popIn({ direction = 1, index = 0 }: { direction?: 1 | -1; index?: number } = {}) {
-  const { duration, rise, fromScale, stagger } = Overlay.enter;
+export function popIn({
+  direction = 1,
+  index = 0,
+  stagger = Overlay.enter.stagger,
+}: { direction?: 1 | -1; index?: number; stagger?: number } = {}) {
+  const { duration, rise, fromScale } = Overlay.enter;
   return new Keyframe({
     0: {
       opacity: 0,

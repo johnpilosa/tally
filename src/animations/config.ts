@@ -198,5 +198,7 @@ export const Overlay = {
     fromScale: 0.97,
     /** Retraso entre una opción y la siguiente en un menú (cascada sutil). */
     stagger: 25,
+    /** Retraso más marcado, para menús donde las opciones aparecen una por una (menú de apps). */
+    oneByOne: 70,
   },
 };
