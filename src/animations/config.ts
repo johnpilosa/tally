@@ -230,4 +230,9 @@ export const ChipLap = {
   duration: 340,
   /** Grosor de la línea que da la vuelta. */
   strokeWidth: 1.2,
+  /**
+   * Cuánto espera el contorno del filtro anterior antes de empezar a irse. Con el mismo valor
+   * que `duration`, se va justo cuando el nuevo termina de dibujarse.
+   */
+  leaveDelay: 340,
 };
