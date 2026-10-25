@@ -22,6 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Milestone, SwitchTally } from '@/animations/config';
 import { AnimatedCount } from '@/components/animated-count';
+import { AppSwitcher } from '@/components/app-switcher';
 import { CounterButton } from '@/components/counter-button';
 import { MilestoneBurst } from '@/components/milestone-burst';
 import { TallyChips } from '@/components/tally-chips';
@@ -79,7 +80,7 @@ export default function HomeScreen() {
           style={styles.flex}
           behavior={Platform.OS === 'web' ? undefined : 'padding'}>
           <View style={styles.topBar}>
-            <Text style={styles.brand}>TALLY</Text>
+            <AppSwitcher current="tally" />
             <View style={styles.topRight}>
               <LangToggle />
               {current && (
