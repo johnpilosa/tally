@@ -2,7 +2,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { ScreenHeader } from '@/components/screen-header';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { CounterButton } from '@/components/counter-button';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
@@ -71,7 +72,10 @@ function EditTallyForm({ tally }: { tally: Tally }) {
   return (
     <View style={styles.screen}>
       <ScreenHeader back title={t.editTitle} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={Spacing.four}>
         <Text style={styles.label}>{t.name}</Text>
         <TextInput
           value={name}
@@ -135,7 +139,7 @@ function EditTallyForm({ tally }: { tally: Tally }) {
           ]}>
           <Text style={styles.saveText}>{t.save}</Text>
         </Pressable>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }

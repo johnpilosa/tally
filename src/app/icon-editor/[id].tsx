@@ -3,7 +3,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenHeader } from '@/components/screen-header';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { CustomIconView } from '@/icons/custom';
@@ -172,7 +173,10 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
   return (
     <View style={styles.screen}>
       <ScreenHeader back title={t.iconEditorTitle} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={Spacing.four}>
         <GestureDetector gesture={gesture}>
           <View style={styles.canvas} accessibilityLabel={t.canvasA11y}>
             <CustomIconView icon={draft} trigger={trigger} size={INNER} selectedId={selectedId} />
@@ -301,7 +305,7 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
             </Text>
           </Pressable>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }

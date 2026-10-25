@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { Appear } from '@/animations/appear';
 
@@ -53,7 +54,10 @@ export default function SearchGameScreen() {
   return (
     <View style={styles.screen}>
       <ScreenHeader app="games" right={<GamesMenuButton />} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={Spacing.four}>
         <ScreenTitle rule>{t.games.navSearch}</ScreenTitle>
         <Appear options={{ index: 2 }} style={styles.inputBlock}>
           <TextInput
@@ -110,7 +114,7 @@ export default function SearchGameScreen() {
         )}
 
         <Text style={[styles.hint, styles.source]}>{t.games.source}</Text>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }

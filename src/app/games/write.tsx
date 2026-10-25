@@ -1,15 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { Appear } from '@/animations/appear';
 import { ScreenHeader } from '@/components/screen-header';
@@ -73,60 +65,58 @@ function Writer({ game }: { game: Game }) {
           </Pressable>
         }
       />
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'web' ? undefined : 'padding'}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Appear>
-            <Text style={styles.label} numberOfLines={1}>
-              {game.title.toUpperCase()} · {t.games.yourReview}
-            </Text>
-          </Appear>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={Spacing.four}>
+        <Appear>
+          <Text style={styles.label} numberOfLines={1}>
+            {game.title.toUpperCase()} · {t.games.yourReview}
+          </Text>
+        </Appear>
 
-          <Appear options={{ index: 1 }}>
-            <TextInput
-              value={draft.title}
-              onChangeText={(title) => change({ title })}
-              placeholder={t.games.reviewTitlePlaceholder}
-              placeholderTextColor={C.textSecondary}
-              multiline
-              style={styles.title}
-            />
-          </Appear>
+        <Appear options={{ index: 1 }}>
+          <TextInput
+            value={draft.title}
+            onChangeText={(title) => change({ title })}
+            placeholder={t.games.reviewTitlePlaceholder}
+            placeholderTextColor={C.textSecondary}
+            multiline
+            style={styles.title}
+          />
+        </Appear>
 
-          <Appear options={{ index: 2 }}>
-            <TextInput
-              value={draft.subtitle}
-              onChangeText={(subtitle) => change({ subtitle })}
-              placeholder={t.games.reviewSubtitlePlaceholder}
-              placeholderTextColor={C.textSecondary}
-              multiline
-              style={styles.subtitle}
-            />
-          </Appear>
+        <Appear options={{ index: 2 }}>
+          <TextInput
+            value={draft.subtitle}
+            onChangeText={(subtitle) => change({ subtitle })}
+            placeholder={t.games.reviewSubtitlePlaceholder}
+            placeholderTextColor={C.textSecondary}
+            multiline
+            style={styles.subtitle}
+          />
+        </Appear>
 
-          <Appear options={{ index: 3 }} style={styles.divider} />
+        <Appear options={{ index: 3 }} style={styles.divider} />
 
-          <Appear options={{ index: 4 }}>
-            <TextInput
-              value={draft.body}
-              onChangeText={(body) => change({ body })}
-              placeholder={t.games.reviewBodyPlaceholder}
-              placeholderTextColor={C.textSecondary}
-              multiline
-              textAlignVertical="top"
-              style={styles.body}
-            />
-          </Appear>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        <Appear options={{ index: 4 }}>
+          <TextInput
+            value={draft.body}
+            onChangeText={(body) => change({ body })}
+            placeholder={t.games.reviewBodyPlaceholder}
+            placeholderTextColor={C.textSecondary}
+            multiline
+            textAlignVertical="top"
+            style={styles.body}
+          />
+        </Appear>
+      </KeyboardAwareScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.background },
-  flex: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: {
     paddingHorizontal: Layout.gutter,

@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { Appear } from '@/animations/appear';
 import { GamesMenuButton } from '@/components/games-nav';
@@ -31,7 +32,10 @@ export default function ListsScreen() {
     <View style={styles.screen}>
       <ScreenHeader app="games" right={<GamesMenuButton />} />
       <View style={styles.body}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          bottomOffset={Spacing.four}>
           <View key={focusKey} style={{ gap: Spacing.three }}>
             <ScreenTitle rule>{t.games.listsTitle}</ScreenTitle>
 
@@ -62,7 +66,7 @@ export default function ListsScreen() {
               lists.map((list, i) => <ListRow key={list.id} list={list} index={i} />)
             )}
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </View>
     </View>
   );

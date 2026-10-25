@@ -1,14 +1,17 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useRef, useState, type ComponentRef } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { Appear } from '@/animations/appear';
 
+import { BlurOverlay } from '@/components/blur-overlay';
 import { GamesMenuButton } from '@/components/games-nav';
+import { ListPicker } from '@/components/list-picker';
 import { ScreenHeader } from '@/components/screen-header';
 import { StarRating } from '@/components/star-rating';
-import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
+import { Colors, Layout, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { newId, RatingCategories, reviewOf, useGames, type Game } from '@/lib/games';
 import { useNow } from '@/hooks/use-now';
 import { useI18n } from '@/lib/i18n';
@@ -37,11 +40,10 @@ export default function ReviewScreen() {
 }
 
 function Review({ game }: { game: Game }) {
-  const { updateGame, removeGame } = useGames();
+  const { updateGame } = useGames();
   const { t, lang } = useI18n();
   const now = useNow();
   const [insight, setInsight] = useState('');
-  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const update = (changes: Partial<Game>) => updateGame(game.id, changes);
   const written = reviewOf(game);
@@ -57,16 +59,13 @@ function Review({ game }: { game: Game }) {
   const setRating = (key: keyof Game['ratings'], value: number | undefined) =>
     update({ ratings: { ...game.ratings, [key]: value } });
 
-  const onRemove = () => {
-    if (!confirmRemove) return setConfirmRemove(true);
-    removeGame(game.id);
-    router.back();
-  };
-
   return (
     <View style={styles.screen}>
       <ScreenHeader back="/games" title={t.games.reviewTitle} right={<GamesMenuButton />} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={Spacing.four}>
         {/* Encabezado: portada, título, estado y favorito */}
         <Appear style={styles.header}>
           {game.coverUrl ? (
@@ -89,13 +88,7 @@ function Review({ game }: { game: Game }) {
                   </Text>
                 </Pressable>
               ))}
-              <Pressable
-                onPress={() => update({ favorite: !game.favorite })}
-                accessibilityLabel={t.games.favorite}
-                accessibilityState={{ selected: game.favorite }}
-                style={[styles.chip, game.favorite && styles.chipFavorite]}>
-                <Text style={[styles.chipText, game.favorite && { color: C.accent }]}>♥</Text>
-              </Pressable>
+              <GameOptions game={game} />
             </View>
           </View>
         </Appear>
@@ -191,16 +184,122 @@ function Review({ game }: { game: Game }) {
             />
           </View>
         </Section>
-
-        <Pressable onPress={onRemove} style={styles.remove}>
-          <Text style={[styles.label, { color: C.accent }]}>
-            {confirmRemove ? t.confirmAgain : t.games.removeGame}
-          </Text>
-        </Pressable>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }
+
+/**
+ * El botón ♥ ▾ junto al estado: abre un menú que cuelga de él con favorito, listas y quitar el
+ * juego. Quitar pide un segundo toque para confirmar.
+ */
+function GameOptions({ game }: { game: Game }) {
+  const { updateGame, removeGame } = useGames();
+  const { t } = useI18n();
+  const { width } = useWindowDimensions();
+  const trigger = useRef<ComponentRef<typeof View>>(null);
+  const [menuAt, setMenuAt] = useState<{ top: number; left: number } | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [listsOpen, setListsOpen] = useState(false);
+
+  const open = () =>
+    trigger.current?.measureInWindow((x, y, _w, h) => {
+      setConfirmRemove(false);
+      setMenuAt({
+        top: y + h + Spacing.two,
+        left: Math.max(Layout.gutter, Math.min(x, width - MENU_WIDTH - Layout.gutter)),
+      });
+    });
+  const close = () => setMenuAt(null);
+
+  const items: {
+    key: string;
+    icon: string;
+    label: string;
+    danger?: boolean;
+    onPress: () => void;
+  }[] = [
+    {
+      key: 'favorite',
+      icon: '♥',
+      label: game.favorite ? t.games.removeFavorite : t.games.addFavorite,
+      onPress: () => {
+        updateGame(game.id, { favorite: !game.favorite });
+        close();
+      },
+    },
+    {
+      key: 'lists',
+      icon: '≡',
+      label: game.listIds.length ? t.games.inLists(game.listIds.length) : t.games.addToList,
+      onPress: () => {
+        close();
+        setListsOpen(true);
+      },
+    },
+    {
+      key: 'remove',
+      icon: '✕',
+      label: confirmRemove ? t.confirmAgain : t.games.removeGame,
+      danger: true,
+      onPress: () => {
+        if (!confirmRemove) return setConfirmRemove(true);
+        close();
+        removeGame(game.id);
+        if (router.canGoBack()) router.back();
+        else router.replace('/games');
+      },
+    },
+  ];
+
+  return (
+    <>
+      <Pressable
+        ref={trigger}
+        onPress={open}
+        accessibilityRole="button"
+        accessibilityLabel={t.games.gameOptions}
+        style={[styles.chip, styles.optionsChip, game.favorite && styles.chipFavorite]}>
+        <Text style={[styles.chipText, game.favorite && { color: C.accent }]}>♥</Text>
+        <Text style={[styles.chipText, styles.caret]}>▾</Text>
+      </Pressable>
+
+      <BlurOverlay visible={!!menuAt} onClose={close}>
+        <View style={[styles.menu, menuAt ?? undefined]}>
+          {items.map((item, i) => (
+            <Appear key={item.key} options={{ direction: -1, index: i }}>
+              <Pressable
+                onPress={item.onPress}
+                style={({ pressed }) => [
+                  styles.menuItem,
+                  item.danger && { borderColor: C.accent },
+                  pressed && { opacity: 0.6 },
+                ]}>
+                <Text
+                  style={[
+                    styles.menuIcon,
+                    item.key === 'favorite' && game.favorite && { color: C.accent },
+                    item.danger && { color: C.accent },
+                  ]}>
+                  {item.icon}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.menuText, item.danger && { color: C.accent }]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            </Appear>
+          ))}
+        </View>
+      </BlurOverlay>
+
+      <ListPicker gameId={listsOpen ? game.id : null} onClose={() => setListsOpen(false)} />
+    </>
+  );
+}
+
+const MENU_WIDTH = 280;
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -285,5 +384,20 @@ const styles = StyleSheet.create({
     borderTopColor: C.border,
   },
   overallLabel: { fontFamily: Type.dot, fontSize: 22, color: C.text, letterSpacing: 1 },
-  remove: { alignSelf: 'center', padding: Spacing.three },
+  optionsChip: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  caret: { fontSize: 9 },
+  menu: { position: 'absolute', width: MENU_WIDTH, gap: Spacing.two },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 999,
+    backgroundColor: C.background,
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.three,
+  },
+  menuIcon: { fontFamily: Type.mono, fontSize: 13, color: C.text, width: 14, textAlign: 'center' },
+  menuText: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
 });

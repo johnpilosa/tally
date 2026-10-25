@@ -5,6 +5,7 @@ import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { Colors } from '@/constants/theme';
 import { BlurHost } from '@/components/blur-overlay';
@@ -37,33 +38,36 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={theme}>
-        <I18nProvider>
-          <CustomIconsProvider>
-            <TallyProvider>
-              <GamesProvider>
-                <BlurHost>
-                  {/* Ninguna pantalla usa la barra de arriba del sistema: todas dibujan <ScreenHeader>. */}
-                  <Stack
-                    screenOptions={{
-                      headerShown: false,
-                      contentStyle: { backgroundColor: Colors.dark.background },
-                    }}>
-                    <Stack.Screen name="index" />
-                    <Stack.Screen name="tally/[id]" />
-                    <Stack.Screen name="edit/[id]" options={{ presentation: 'modal' }} />
-                    <Stack.Screen name="icon-editor/[id]" options={{ presentation: 'modal' }} />
-                    <Stack.Screen
-                      name="games"
-                      options={{ animation: 'fade', animationDuration: 150 }}
-                    />
-                  </Stack>
-                </BlurHost>
-              </GamesProvider>
-            </TallyProvider>
-          </CustomIconsProvider>
-        </I18nProvider>
-      </ThemeProvider>
+      {/* Mantiene lo que estás escribiendo arriba del teclado (ver KeyboardAwareScrollView). */}
+      <KeyboardProvider>
+        <ThemeProvider value={theme}>
+          <I18nProvider>
+            <CustomIconsProvider>
+              <TallyProvider>
+                <GamesProvider>
+                  <BlurHost>
+                    {/* Ninguna pantalla usa la barra de arriba del sistema: todas dibujan <ScreenHeader>. */}
+                    <Stack
+                      screenOptions={{
+                        headerShown: false,
+                        contentStyle: { backgroundColor: Colors.dark.background },
+                      }}>
+                      <Stack.Screen name="index" />
+                      <Stack.Screen name="tally/[id]" />
+                      <Stack.Screen name="edit/[id]" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="icon-editor/[id]" options={{ presentation: 'modal' }} />
+                      <Stack.Screen
+                        name="games"
+                        options={{ animation: 'fade', animationDuration: 150 }}
+                      />
+                    </Stack>
+                  </BlurHost>
+                </GamesProvider>
+              </TallyProvider>
+            </CustomIconsProvider>
+          </I18nProvider>
+        </ThemeProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

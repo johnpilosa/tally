@@ -1,15 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,7 +9,8 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Milestone } from '@/animations/config';
 import { Appear } from '@/animations/appear';
@@ -45,6 +38,7 @@ export default function HomeScreen() {
   const [adding, setAdding] = useState(false);
   const [celebrations, setCelebrations] = useState<Celebration[]>([]);
   const focusKey = useFocusKey();
+  const insets = useSafeAreaInsets();
   const countScale = useSharedValue(1);
   const countPopStyle = useAnimatedStyle(() => ({ transform: [{ scale: countScale.get() }] }));
 
@@ -91,68 +85,70 @@ export default function HomeScreen() {
         }
       />
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior={Platform.OS === 'web' ? undefined : 'padding'}>
-          {current ? (
-            <Appear
-              key={`${current.id}-${focusKey}`}
+        {current ? (
+          <Appear
+            key={`${current.id}-${focusKey}`}
 
-              style={styles.center}>
-              <View style={styles.titleBlock}>
-                <Pressable
-                  hitSlop={12}
-                  onPress={() => router.push(`/edit/${current.id}`)}
-                  accessibilityLabel={t.editCounter}
-                  style={styles.nameRow}>
-                  <Text style={styles.name} numberOfLines={1}>
-                    {current.name}
-                  </Text>
-                  <Text style={styles.editHint}>✎</Text>
-                </Pressable>
-                <Animated.View style={countPopStyle}>
-                  <AnimatedCount value={current.events.length} style={styles.count} />
-                </Animated.View>
-                <Text style={styles.meta}>
-                  {first
-                    ? t.todaySince(today, formatDate(first, now, lang).toUpperCase())
-                    : t.noMarks}
-                </Text>
-              </View>
-
-              <View>
-                <CounterButton
-                  icon={current.icon}
-                  size={BUTTON_SIZE}
-                  onPress={onCount}
-                  accessibilityLabel={t.addOneTo(current.name)}
-                />
-                {celebrations.map((c) => (
-                  <MilestoneBurst
-                    key={c.key}
-                    value={c.value}
-                    big={c.big}
-                    size={BUTTON_SIZE}
-                    onDone={() => setCelebrations((all) => all.filter((x) => x.key !== c.key))}
-                  />
-                ))}
-              </View>
-
+            style={styles.center}>
+            <View style={styles.titleBlock}>
               <Pressable
                 hitSlop={12}
-                disabled={!last}
-                onPress={() => undo(current.id)}
-                style={{ opacity: last ? 1 : 0.3 }}>
-                <Text style={styles.link}>{t.undo}</Text>
+                onPress={() => router.push(`/edit/${current.id}`)}
+                accessibilityLabel={t.editCounter}
+                style={styles.nameRow}>
+                <Text style={styles.name} numberOfLines={1}>
+                  {current.name}
+                </Text>
+                <Text style={styles.editHint}>✎</Text>
               </Pressable>
-            </Appear>
-          ) : (
-            <View style={styles.center}>
-              <Text style={styles.emptyTitle}>{t.emptyTitle}</Text>
-              <Text style={styles.meta}>{t.emptyHint}</Text>
+              <Animated.View style={countPopStyle}>
+                <AnimatedCount value={current.events.length} style={styles.count} />
+              </Animated.View>
+              <Text style={styles.meta}>
+                {first
+                  ? t.todaySince(today, formatDate(first, now, lang).toUpperCase())
+                  : t.noMarks}
+              </Text>
             </View>
-          )}
 
+            <View>
+              <CounterButton
+                icon={current.icon}
+                size={BUTTON_SIZE}
+                onPress={onCount}
+                accessibilityLabel={t.addOneTo(current.name)}
+              />
+              {celebrations.map((c) => (
+                <MilestoneBurst
+                  key={c.key}
+                  value={c.value}
+                  big={c.big}
+                  size={BUTTON_SIZE}
+                  onDone={() => setCelebrations((all) => all.filter((x) => x.key !== c.key))}
+                />
+              ))}
+            </View>
+
+            <Pressable
+              hitSlop={12}
+              disabled={!last}
+              onPress={() => undo(current.id)}
+              style={{ opacity: last ? 1 : 0.3 }}>
+              <Text style={styles.link}>{t.undo}</Text>
+            </Pressable>
+          </Appear>
+        ) : (
+          <View style={styles.center}>
+            <Text style={styles.emptyTitle}>{t.emptyTitle}</Text>
+            <Text style={styles.meta}>{t.emptyHint}</Text>
+          </View>
+        )}
+
+        {/* Lo de abajo sube con el teclado, para ver lo que escribes en el nombre nuevo. El
+              margen de abajo de la pantalla ya queda tapado por el teclado, así que se descuenta. */}
+        <KeyboardStickyView
+          offset={{ opened: insets.bottom - Spacing.two }}
+          style={{ backgroundColor: C.background }}>
           {adding || !current ? (
             <NewTallyInput onDone={() => setAdding(false)} canCancel={!!current} />
           ) : (
@@ -164,7 +160,7 @@ export default function HomeScreen() {
               onAdd={() => setAdding(true)}
             />
           )}
-        </KeyboardAvoidingView>
+        </KeyboardStickyView>
       </SafeAreaView>
     </View>
   );
@@ -236,7 +232,6 @@ function NewTallyInput({ onDone, canCancel }: { onDone: () => void; canCancel: b
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.background },
   safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' },
-  flex: { flex: 1 },
   langToggle: { flexDirection: 'row', alignItems: 'center' },
   langItem: { flexDirection: 'row', alignItems: 'center' },
   langSeparator: {

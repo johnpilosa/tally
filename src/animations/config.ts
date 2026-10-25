@@ -92,21 +92,33 @@ export const Nerd = {
 
 /** La nave: se parte a la mitad con un destello, queda flotando y se vuelve a juntar. */
 export const StarDestroyer = {
-  /** Cuánto se separan las mitades hacia los lados, en puntos del dibujo (lienzo de 100). */
+  /**
+   * Dónde corta el rayo: la línea vertical en x = `cutX` del dibujo (lienzo de 100; la nave va
+   * de x 20 a 80). Lo que queda a la izquierda es el pedazo que sale volando.
+   */
+  cutX: 38.5,
+  /** Cuánto tarda el rayo en cruzar la nave de arriba a abajo, en milisegundos. */
+  beamDuration: 140,
+  /** Cuánto dura el brillo del rayo después de cruzar, apagándose. */
+  beamFade: 260,
+  /** Cuánto se aleja el pedazo cortado hacia la izquierda, en puntos del dibujo. */
   split: 14,
-  /** Cuánto gira cada mitad al separarse, en grados. */
-  tilt: 16,
-  /** Cuánto se van hacia atrás las mitades al romperse, en puntos del dibujo. */
-  drift: 6,
+  /** Cuánto gira el pedazo cortado, en grados. */
+  tilt: 22,
+  /** Cuánto cae el pedazo cortado hacia atrás, en puntos del dibujo. */
+  drift: 8,
+  /** Qué parte de ese movimiento hace el resto de la nave hacia el otro lado (0 a 1). */
+  recoil: 0.3,
   breakDuration: 260,
   breakEasing: Easing.out(Easing.cubic),
   /** Cuánto rato quedan separadas antes de volver, en milisegundos. */
   hold: 450,
   /** Cómo se vuelven a juntar. */
   rejoin: { damping: 12, stiffness: 140 },
-  /** El destello rojo del centro. */
-  flashDuration: 450,
-  flashMaxScale: 2.2,
+  /** Las partículas que salen del corte: cuántas, cuán lejos llegan y cuánto duran. */
+  particles: 22,
+  particleDistance: 34,
+  particleDuration: 650,
 };
 
 /* ─────────────────────────── LISTA DE CONTADORES ─────────────────────────── */

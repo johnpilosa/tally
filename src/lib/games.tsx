@@ -36,7 +36,7 @@ export type Game = {
   notes: string;
   review?: WrittenReview;
   insights: Insight[];
-  /** 1 a 5 por categoría, más `overall`. Si una no está, todavía no se puntuó. */
+  /** 0,5 a 5 (de media en media) por categoría, más `overall`. Si una no está, todavía no se puntuó. */
   ratings: Partial<Record<RatingCategory | 'overall', number>>;
   addedAt: number;
 };
