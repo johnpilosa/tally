@@ -1,9 +1,8 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated from 'react-native-reanimated';
 
-import { popIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
 
 import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
@@ -56,7 +55,7 @@ export default function SearchGameScreen() {
       <ScreenHeader app="games" right={<GamesMenuButton />} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <ScreenTitle>{t.games.navSearch}</ScreenTitle>
-        <Animated.View entering={popIn({ index: 2 })} style={styles.inputBlock}>
+        <Appear options={{ index: 2 }} style={styles.inputBlock}>
           <TextInput
             value={query}
             onChangeText={setQuery}
@@ -77,14 +76,14 @@ export default function SearchGameScreen() {
                     ? t.games.searchHint
                     : ' '}
           </Text>
-        </Animated.View>
+        </Appear>
 
         {shownHits.length > 0 && (
           <View style={styles.dropdown}>
             {shownHits.map((hit, i) => {
               const added = games.some((g) => g.id === hit.key);
               return (
-                <Animated.View key={hit.key} entering={popIn({ index: Math.min(i, 8) })}>
+                <Appear key={hit.key} options={{ index: Math.min(i, 8) }}>
                   <Pressable
                     onPress={() =>
                       router.push({ pathname: '/games/game', params: { key: hit.key } })
@@ -104,7 +103,7 @@ export default function SearchGameScreen() {
                     </View>
                     {added && <View style={styles.dot} />}
                   </Pressable>
-                </Animated.View>
+                </Appear>
               );
             })}
           </View>

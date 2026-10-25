@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ladderIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
+import { Overlay } from '@/animations/config';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useI18n } from '@/lib/i18n';
@@ -55,9 +55,15 @@ export function AppSwitcher({ current }: { current: AppId }) {
           {APPS.map((app, i) => {
             const active = app.id === current;
             return (
-              <Animated.View
+              <Appear
                 key={app.id}
-                entering={ladderIn({ index: i, step: ITEM_HEIGHT + ITEM_GAP })}
+                options={{
+                  index: i,
+                  direction: -1,
+                  distance: ITEM_HEIGHT + ITEM_GAP,
+                  stagger: Overlay.ladder.stagger,
+                  duration: Overlay.ladder.duration,
+                }}
                 // Cada opción va por encima de la siguiente, para que la tape mientras sale.
                 style={{ zIndex: APPS.length - i }}>
                 <Pressable
@@ -68,7 +74,7 @@ export function AppSwitcher({ current }: { current: AppId }) {
                   </Text>
                   {active && <View style={styles.dot} />}
                 </Pressable>
-              </Animated.View>
+              </Appear>
             );
           })}
         </View>

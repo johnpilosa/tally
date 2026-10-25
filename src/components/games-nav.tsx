@@ -1,11 +1,10 @@
 import { router, usePathname } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Line, Rect } from 'react-native-svg';
 
-import { popIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
 import { eraseTitleThen } from '@/animations/title-bus';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
@@ -137,14 +136,14 @@ export function GamesMenuButton() {
       <BlurOverlay visible={open} onClose={() => setOpen(false)}>
         <View style={[styles.menu, { top: insets.top + Layout.headerHeight }]}>
           {SECTIONS.map((s, i) => (
-            <Animated.View key={s.id} entering={popIn({ direction: -1, index: i })}>
+            <Appear key={s.id} options={{ direction: -1, index: i }}>
               <Pressable
                 onPress={() => pick(s.id)}
                 style={({ pressed }) => [styles.menuItem, pressed && { opacity: 0.6 }]}>
                 <SectionIcon section={s.id} color={C.text} />
                 <Text style={styles.menuText}>{sectionLabel(t, s.id)}</Text>
               </Pressable>
-            </Animated.View>
+            </Appear>
           ))}
         </View>
       </BlurOverlay>

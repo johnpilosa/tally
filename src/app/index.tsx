@@ -20,7 +20,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Milestone } from '@/animations/config';
-import { popIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
 import { AnimatedCount } from '@/components/animated-count';
 import { ScreenHeader } from '@/components/screen-header';
 import { CounterButton } from '@/components/counter-button';
@@ -95,9 +95,9 @@ export default function HomeScreen() {
           style={styles.flex}
           behavior={Platform.OS === 'web' ? undefined : 'padding'}>
           {current ? (
-            <Animated.View
+            <Appear
               key={`${current.id}-${focusKey}`}
-              entering={popIn()}
+
               style={styles.center}>
               <View style={styles.titleBlock}>
                 <Pressable
@@ -145,7 +145,7 @@ export default function HomeScreen() {
                 style={{ opacity: last ? 1 : 0.3 }}>
                 <Text style={styles.link}>{t.undo}</Text>
               </Pressable>
-            </Animated.View>
+            </Appear>
           ) : (
             <View style={styles.center}>
               <Text style={styles.emptyTitle}>{t.emptyTitle}</Text>

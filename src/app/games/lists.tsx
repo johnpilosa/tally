@@ -2,9 +2,8 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
 
-import { popIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
 import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
@@ -36,7 +35,7 @@ export default function ListsScreen() {
           <View key={focusKey} style={{ gap: Spacing.three }}>
             <ScreenTitle>{t.games.listsTitle}</ScreenTitle>
 
-            <Animated.View entering={popIn({ index: 1 })} style={styles.newRow}>
+            <Appear options={{ index: 1 }} style={styles.newRow}>
               <TextInput
                 value={name}
                 onChangeText={setName}
@@ -52,7 +51,7 @@ export default function ListsScreen() {
                 style={{ opacity: name.trim() ? 1 : 0.3 }}>
                 <Text style={styles.link}>{t.games.createList}</Text>
               </Pressable>
-            </Animated.View>
+            </Appear>
 
             {lists.length === 0 ? (
               <View style={styles.empty}>
@@ -90,11 +89,7 @@ function ListRow({ list, index }: { list: GameList; index: number }) {
   };
 
   return (
-    <Animated.View
-      entering={popIn({ index: Math.min(index, 8) })}
-      exiting={FadeOut.duration(200)}
-      layout={LinearTransition}
-      style={styles.row}>
+    <Appear options={{ index: Math.min(index, 8) }} style={styles.row}>
       <Pressable
         onPress={() =>
           !editing && router.push({ pathname: '/games/list', params: { id: list.id } })
@@ -141,7 +136,7 @@ function ListRow({ list, index }: { list: GameList; index: number }) {
           </Text>
         </Pressable>
       </View>
-    </Animated.View>
+    </Appear>
   );
 }
 

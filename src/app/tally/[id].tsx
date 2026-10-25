@@ -3,9 +3,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenHeader } from '@/components/screen-header';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Animated from 'react-native-reanimated';
 
-import { popIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
 
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useNow } from '@/hooks/use-now';
@@ -58,28 +57,25 @@ export default function TallyScreen() {
       <ScreenHeader back title={t.historyTitle} />
       <ScrollView contentContainerStyle={styles.content}>
         <View key={focusKey} style={{ gap: Spacing.four }}>
-          <Animated.View entering={popIn()} style={styles.hero}>
+          <Appear style={styles.hero}>
             <Text style={styles.name}>{tally.name}</Text>
             <Text style={styles.bigCount}>{tally.events.length}</Text>
             <Text style={styles.meta}>
               {last ? t.lastTime(formatAgo(last, now, lang).toUpperCase()) : t.stillNoMarks}
             </Text>
-          </Animated.View>
+          </Appear>
 
-          <Animated.View entering={popIn({ index: 1 })} style={styles.stats}>
+          <Appear options={{ index: 1 }} style={styles.stats}>
             {stats.map((s) => (
               <View key={s.label} style={styles.stat}>
                 <Text style={styles.statValue}>{s.value}</Text>
                 <Text style={styles.meta}>{s.label}</Text>
               </View>
             ))}
-          </Animated.View>
+          </Appear>
 
           {groups.map((group, g) => (
-            <Animated.View
-              key={group.label}
-              entering={popIn({ index: Math.min(g + 2, 8) })}
-              style={styles.group}>
+            <Appear key={group.label} options={{ index: Math.min(g + 2, 8) }} style={styles.group}>
               <Text style={styles.meta}>
                 {group.label.toUpperCase()} · {group.items.length}
               </Text>
@@ -92,7 +88,7 @@ export default function TallyScreen() {
                   </View>
                 ))}
               </View>
-            </Animated.View>
+            </Appear>
           ))}
 
           <Pressable

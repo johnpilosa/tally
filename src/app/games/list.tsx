@@ -1,9 +1,8 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
 
-import { popIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
 import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
@@ -33,20 +32,15 @@ export default function ListScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <View key={focusKey} style={{ gap: Spacing.three }}>
-            <Animated.View entering={popIn()}>
+            <Appear>
               <ScreenTitle>{list.name.toUpperCase()}</ScreenTitle>
               <Text style={styles.label}>{t.games.gamesCount(inList.length)}</Text>
-            </Animated.View>
+            </Appear>
 
             {inList.length === 0 && <Text style={styles.label}>{t.games.listEmpty}</Text>}
 
             {inList.map((g, i) => (
-              <Animated.View
-                key={g.id}
-                entering={popIn({ index: Math.min(i + 1, 8) })}
-                exiting={FadeOut.duration(200)}
-                layout={LinearTransition}
-                style={styles.row}>
+              <Appear key={g.id} options={{ index: Math.min(i + 1, 8) }} style={styles.row}>
                 <Pressable
                   onPress={() => router.push({ pathname: '/games/review', params: { id: g.id } })}
                   style={({ pressed }) => [styles.rowMain, pressed && { opacity: 0.6 }]}>
@@ -67,7 +61,7 @@ export default function ListScreen() {
                 <Pressable hitSlop={10} onPress={() => toggleInList(g.id, list.id)}>
                   <Text style={styles.label}>✕</Text>
                 </Pressable>
-              </Animated.View>
+              </Appear>
             ))}
           </View>
         </ScrollView>

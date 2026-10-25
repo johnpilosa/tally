@@ -2,10 +2,9 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { popIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { BouncePressable } from '@/components/bounce-pressable';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
@@ -66,7 +65,7 @@ export default function MyGamesScreen() {
             <View style={styles.titleWrap}>
               <ScreenTitle>{t.games.myGames}</ScreenTitle>
             </View>
-            <Animated.View entering={popIn({ index: 1 })}>
+            <Appear options={{ index: 1 }}>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -84,7 +83,7 @@ export default function MyGamesScreen() {
                   </Pressable>
                 ))}
               </ScrollView>
-            </Animated.View>
+            </Appear>
 
             <ScrollView contentContainerStyle={styles.list}>
               <View key={focusKey} style={{ gap: Spacing.two }}>
@@ -131,10 +130,7 @@ function GameRow({
     .join('  ·  ');
 
   return (
-    <Animated.View
-      entering={popIn({ index: Math.min(index, 8) })}
-      layout={LinearTransition}
-      style={styles.row}>
+    <Appear options={{ index: Math.min(index, 8) }} style={styles.row}>
       <Pressable
         onPress={() => router.push({ pathname: '/games/review', params: { id: game.id } })}
         style={({ pressed }) => [styles.rowMain, pressed && { opacity: 0.6 }]}>
@@ -165,7 +161,7 @@ function GameRow({
         style={[styles.iconButton, game.listIds.length > 0 && { borderColor: C.text }]}>
         <Text style={[styles.iconText, game.listIds.length > 0 && { color: C.text }]}>≡</Text>
       </BouncePressable>
-    </Animated.View>
+    </Appear>
   );
 }
 
@@ -185,7 +181,7 @@ function ListPicker({ gameId, onClose }: { gameId: string | null; onClose: () =>
   return (
     <BlurOverlay visible={!!game} onClose={onClose}>
       <View style={[styles.popupWrap, { paddingTop: insets.top }]} pointerEvents="box-none">
-        <Animated.View entering={popIn()} style={styles.popup}>
+        <Appear style={styles.popup}>
           <Text style={styles.label}>{t.games.addToList}</Text>
           <Text style={styles.popupTitle} numberOfLines={2}>
             {game?.title.toUpperCase()}
@@ -219,7 +215,7 @@ function ListPicker({ gameId, onClose }: { gameId: string | null; onClose: () =>
             style={({ pressed }) => [styles.addFirst, pressed && { opacity: 0.7 }]}>
             <Text style={styles.addFirstText}>{t.games.done}</Text>
           </Pressable>
-        </Animated.View>
+        </Appear>
       </View>
     </BlurOverlay>
   );

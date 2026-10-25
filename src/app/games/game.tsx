@@ -2,10 +2,9 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import Animated from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { popIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader } from '@/components/screen-header';
@@ -96,7 +95,7 @@ export default function GameScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <View key={focusKey} style={{ gap: Spacing.four }}>
-            <Animated.View entering={popIn()} style={styles.titleBlock}>
+            <Appear style={styles.titleBlock}>
               <Title title={game.title} width={content} />
               <View style={styles.metaRow}>
                 {year && <Text style={styles.metaChip}>{year}</Text>}
@@ -104,11 +103,9 @@ export default function GameScreen() {
                   <Text style={[styles.metaChip, styles.metaChipOn]}>{t.games.inList}</Text>
                 )}
               </View>
-            </Animated.View>
+            </Appear>
 
-            <Animated.View
-              entering={popIn({ index: 2 })}
-              style={[styles.boxes, { height: boxHeight }]}>
+            <Appear options={{ index: 2 }} style={[styles.boxes, { height: boxHeight }]}>
               <Pressable onPress={() => setSummaryOpen(true)} style={styles.summaryBox}>
                 <Text style={styles.label}>{t.games.about}</Text>
                 <Text style={styles.summary}>{game.summary || t.games.noSummary}</Text>
@@ -125,9 +122,9 @@ export default function GameScreen() {
                 <Text style={styles.readMore}>{t.games.readMore}</Text>
               </Pressable>
               <Cover url={game.coverUrl} width={coverWidth} />
-            </Animated.View>
+            </Appear>
 
-            <Animated.View entering={popIn({ index: 4 })} style={styles.actionsBlock}>
+            <Appear options={{ index: 4 }} style={styles.actionsBlock}>
               <View style={styles.actions}>
                 <Pressable
                   onPress={add}
@@ -154,7 +151,7 @@ export default function GameScreen() {
                   {statusOpen && (
                     <View style={styles.statusMenu}>
                       {(['playing', 'played'] as const).map((s, i) => (
-                        <Animated.View key={s} entering={popIn({ direction: -1, index: i })}>
+                        <Appear key={s} options={{ direction: -1, index: i }}>
                           <Pressable
                             onPress={() => pickStatus(s)}
                             style={({ pressed }) => [
@@ -166,7 +163,7 @@ export default function GameScreen() {
                               {t.games[s]}
                             </Text>
                           </Pressable>
-                        </Animated.View>
+                        </Appear>
                       ))}
                     </View>
                   )}
@@ -177,10 +174,10 @@ export default function GameScreen() {
                   <Text style={styles.buttonText}>{t.games.openReview}</Text>
                 </Pressable>
               )}
-            </Animated.View>
+            </Appear>
 
             {shots.length > 0 && (
-              <Animated.View entering={popIn({ index: 6 })} style={styles.shotsBlock}>
+              <Appear options={{ index: 6 }} style={styles.shotsBlock}>
                 <Text style={styles.label}>{t.games.screenshots}</Text>
                 <ScrollView
                   horizontal
@@ -198,7 +195,7 @@ export default function GameScreen() {
                     </Pressable>
                   ))}
                 </ScrollView>
-              </Animated.View>
+              </Appear>
             )}
           </View>
         </ScrollView>
@@ -207,7 +204,7 @@ export default function GameScreen() {
       {/* Popup: agregado a la lista */}
       <BlurOverlay visible={addedOpen} onClose={() => setAddedOpen(false)}>
         <View style={styles.popupWrap} pointerEvents="box-none">
-          <Animated.View entering={popIn()} style={styles.popup}>
+          <Appear style={styles.popup}>
             <View style={styles.popupTitleRow}>
               <View style={styles.dot} />
               <Text style={styles.label}>{t.games.addedTitle}</Text>
@@ -229,14 +226,14 @@ export default function GameScreen() {
             <Pressable onPress={() => setAddedOpen(false)} style={styles.popupSecondary}>
               <Text style={[styles.buttonText, styles.dim]}>{t.games.keepBrowsing}</Text>
             </Pressable>
-          </Animated.View>
+          </Appear>
         </View>
       </BlurOverlay>
 
       {/* Resumen completo */}
       <BlurOverlay visible={summaryOpen} onClose={() => setSummaryOpen(false)}>
         <View style={styles.popupWrap} pointerEvents="box-none">
-          <Animated.View entering={popIn()} style={[styles.popup, styles.summaryPopup]}>
+          <Appear style={[styles.popup, styles.summaryPopup]}>
             <Text style={styles.label}>{t.games.about}</Text>
             <ScrollView>
               <Text style={styles.summaryFull}>{game?.summary}</Text>
@@ -244,7 +241,7 @@ export default function GameScreen() {
             <Pressable onPress={() => setSummaryOpen(false)} style={styles.popupSecondary}>
               <Text style={[styles.buttonText, styles.dim]}>{t.games.close}</Text>
             </Pressable>
-          </Animated.View>
+          </Appear>
         </View>
       </BlurOverlay>
 
@@ -252,14 +249,14 @@ export default function GameScreen() {
       <BlurOverlay visible={!!shotOpen} onClose={() => setShotOpen(null)}>
         <View style={styles.popupWrap} pointerEvents="box-none">
           {shotOpen && (
-            <Animated.View entering={popIn()} style={styles.shotFull} pointerEvents="none">
+            <Appear style={styles.shotFull} pointerEvents="none">
               <Image
                 source={{ uri: shotOpen.url }}
                 style={styles.shotFullImage}
                 contentFit="contain"
               />
               {!!shotOpen.caption && <Text style={styles.caption}>{shotOpen.caption}</Text>}
-            </Animated.View>
+            </Appear>
           )}
         </View>
       </BlurOverlay>

@@ -2,9 +2,8 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated, { LinearTransition } from 'react-native-reanimated';
 
-import { popIn } from '@/animations/presets';
+import { Appear } from '@/animations/appear';
 
 import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader } from '@/components/screen-header';
@@ -67,7 +66,7 @@ function Review({ game }: { game: Game }) {
       <ScreenHeader back="/games" title={t.games.reviewTitle} right={<GamesMenuButton />} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {/* Encabezado: portada, título, estado y favorito */}
-        <Animated.View entering={popIn()} style={styles.header}>
+        <Appear style={styles.header}>
           {game.coverUrl ? (
             <Image source={{ uri: game.coverUrl }} style={styles.cover} contentFit="cover" />
           ) : (
@@ -97,7 +96,7 @@ function Review({ game }: { game: Game }) {
               </Pressable>
             </View>
           </View>
-        </Animated.View>
+        </Appear>
 
         {/* Notas */}
         <Section label={t.games.notes}>
@@ -135,11 +134,7 @@ function Review({ game }: { game: Game }) {
             <Text style={styles.label}>{t.games.noInsights}</Text>
           ) : (
             game.insights.map((ins) => (
-              <Animated.View
-                key={ins.id}
-                entering={popIn()}
-                layout={LinearTransition}
-                style={styles.insight}>
+              <Appear key={ins.id} style={styles.insight}>
                 <View style={styles.dot} />
                 <View style={styles.insightBody}>
                   <Text style={styles.insightText}>{ins.text}</Text>
@@ -154,7 +149,7 @@ function Review({ game }: { game: Game }) {
                   }>
                   <Text style={styles.label}>✕</Text>
                 </Pressable>
-              </Animated.View>
+              </Appear>
             ))
           )}
         </Section>
@@ -195,10 +190,10 @@ function Review({ game }: { game: Game }) {
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Animated.View entering={popIn({ index: 2 })} style={styles.section}>
+    <Appear options={{ index: 2 }} style={styles.section}>
       <Text style={styles.label}>{label}</Text>
       {children}
-    </Animated.View>
+    </Appear>
   );
 }
 
