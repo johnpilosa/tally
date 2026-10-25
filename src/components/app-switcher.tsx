@@ -4,8 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Overlay } from '@/animations/config';
-import { popIn } from '@/animations/presets';
+import { ladderIn } from '@/animations/presets';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useI18n } from '@/lib/i18n';
@@ -13,6 +12,9 @@ import { useI18n } from '@/lib/i18n';
 const C = Colors.dark;
 /** Margen interno de cada opción del menú. */
 const ITEM_PADDING = Spacing.three;
+/** Alto fijo de cada opción y espacio entre ellas: la escalera necesita saber cuánto bajar. */
+const ITEM_HEIGHT = 46;
+const ITEM_GAP = Spacing.two;
 
 /** Las "apps" dentro de la app. Para agregar otra: súmala aquí y su nombre en `apps` de i18n. */
 const APPS = [
@@ -55,7 +57,9 @@ export function AppSwitcher({ current }: { current: AppId }) {
             return (
               <Animated.View
                 key={app.id}
-                entering={popIn({ direction: -1, index: i, stagger: Overlay.enter.oneByOne })}>
+                entering={ladderIn({ index: i, step: ITEM_HEIGHT + ITEM_GAP })}
+                // Cada opción va por encima de la siguiente, para que la tape mientras sale.
+                style={{ zIndex: APPS.length - i }}>
                 <Pressable
                   onPress={() => go(app.id, app.route)}
                   style={({ pressed }) => [styles.item, pressed && { opacity: 0.6 }]}>
@@ -82,7 +86,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: Layout.gutter - ITEM_PADDING,
     alignItems: 'flex-start',
-    gap: Spacing.two,
+    gap: ITEM_GAP,
   },
   item: {
     flexDirection: 'row',
@@ -93,7 +97,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: C.background,
     paddingHorizontal: ITEM_PADDING,
-    paddingVertical: Spacing.two + 2,
+    height: ITEM_HEIGHT,
   },
   inactive: { color: C.textSecondary },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.accent },
