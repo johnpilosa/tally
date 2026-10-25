@@ -12,6 +12,7 @@ import { CustomIconsProvider } from '@/lib/custom-icons';
 import { GamesProvider } from '@/lib/games';
 import { I18nProvider } from '@/lib/i18n';
 import { TallyProvider } from '@/lib/tallies';
+import '@/lib/web-scrollbar';
 
 SplashScreen.preventAutoHideAsync();
 

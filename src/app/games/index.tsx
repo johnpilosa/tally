@@ -1,10 +1,12 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/animations/appear';
+import { FilterSwitch } from '@/animations/config';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { BouncePressable } from '@/components/bounce-pressable';
 import { LapChip } from '@/components/lap-chip';
@@ -27,9 +29,28 @@ export default function MyGamesScreen() {
   const [listsFor, setListsFor] = useState<string | null>(null);
   const focusKey = useFocusKey();
 
+  // El chip cambia al instante; la lista espera a que la anterior se desvanezca y recién
+  // entonces muestra el nuevo filtro (que entra con su animación).
+  const [listFilter, setListFilter] = useState<Filter>('all');
+  const listOpacity = useSharedValue(1);
+  const listStyle = useAnimatedStyle(() => ({ opacity: listOpacity.get() }));
+  const switchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => clearTimeout(switchTimer.current ?? undefined), []);
+
+  const pickFilter = (next: Filter) => {
+    if (next === filter) return;
+    setFilter(next);
+    listOpacity.set(withTiming(0, { duration: FilterSwitch.leave }));
+    clearTimeout(switchTimer.current ?? undefined);
+    switchTimer.current = setTimeout(() => {
+      setListFilter(next);
+      listOpacity.set(1);
+    }, FilterSwitch.leave);
+  };
+
   const shown = games.filter((g) => {
-    if (filter === 'all') return true;
-    if (filter === 'playing' || filter === 'played') return g.status === filter;
+    if (listFilter === 'all') return true;
+    if (listFilter === 'playing' || listFilter === 'played') return g.status === listFilter;
     return g.favorite;
   });
 
@@ -64,7 +85,7 @@ export default function MyGamesScreen() {
         ) : (
           <>
             <View style={styles.titleWrap}>
-              <ScreenTitle>{t.games.myGames}</ScreenTitle>
+              <ScreenTitle rule>{t.games.myGames}</ScreenTitle>
             </View>
             <Appear options={{ index: 1 }}>
               <ScrollView
@@ -73,7 +94,7 @@ export default function MyGamesScreen() {
                 style={styles.filtersScroll}
                 contentContainerStyle={styles.filters}>
                 {filters.map((f) => (
-                  <LapChip key={f.id} active={filter === f.id} onPress={() => setFilter(f.id)}>
+                  <LapChip key={f.id} active={filter === f.id} onPress={() => pickFilter(f.id)}>
                     {filter === f.id && <View style={styles.dot} />}
                     <Text style={[styles.chipText, filter === f.id && styles.chipTextActive]}>
                       {f.label}
@@ -85,8 +106,14 @@ export default function MyGamesScreen() {
 
             <ScrollView contentContainerStyle={styles.list}>
               {/* Cambiar de filtro o volver a la pantalla vuelve a animar la lista. */}
-              <View key={`${filter}-${focusKey}`} style={{ gap: Spacing.two }}>
-                {shown.length === 0 && <Text style={styles.label}>{t.games.emptyFilter}</Text>}
+              <Animated.View
+                key={`${listFilter}-${focusKey}`}
+                style={[{ gap: Spacing.two }, listStyle]}>
+                {shown.length === 0 && (
+                  <Appear>
+                    <Text style={styles.label}>{t.games.emptyFilter}</Text>
+                  </Appear>
+                )}
                 {shown.map((g, i) => (
                   <GameRow
                     key={g.id}
@@ -96,7 +123,7 @@ export default function MyGamesScreen() {
                     onLists={() => setListsFor(g.id)}
                   />
                 ))}
-              </View>
+              </Animated.View>
             </ScrollView>
           </>
         )}

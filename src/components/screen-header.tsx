@@ -2,7 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Line, Path } from 'react-native-svg';
 
 import { TitleTyping } from '@/animations/config';
 import { registerTitle } from '@/animations/title-bus';
@@ -78,7 +78,7 @@ export function ScreenHeader({
  * letra cada vez que la pantalla aparece, y se borra letra por letra (desde la última) cuando
  * la navegación se lo pide al cambiar de pestaña. Velocidades en `TitleTyping` (config.ts).
  */
-export function ScreenTitle({ children }: { children: string }) {
+export function ScreenTitle({ children, rule }: { children: string; rule?: boolean }) {
   const [shown, setShown] = useState(0);
   const shownRef = useRef(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -116,11 +116,31 @@ export function ScreenTitle({ children }: { children: string }) {
     }, [children]),
   );
 
-  return (
+  const heading = (
     <Text style={styles.heading} accessibilityLabel={children}>
       {/* El espacio invisible mantiene el alto de la línea mientras no hay letras. */}
       {children.slice(0, shown) || '\u200b'}
     </Text>
+  );
+  if (!rule) return heading;
+  return (
+    <View>
+      {heading}
+      {/* Línea punteada gris, medio transparente, debajo del título. */}
+      <Svg width="100%" height={4} style={styles.rule}>
+        <Line
+          x1={2}
+          y1={2}
+          x2="100%"
+          y2={2}
+          stroke={C.textSecondary}
+          strokeOpacity={0.5}
+          strokeWidth={3}
+          strokeDasharray="0.1 10"
+          strokeLinecap="round"
+        />
+      </Svg>
+    </View>
   );
 }
 
@@ -148,4 +168,5 @@ const styles = StyleSheet.create({
     marginTop: Spacing.three,
     marginBottom: Spacing.two,
   },
+  rule: { marginBottom: Spacing.two },
 });

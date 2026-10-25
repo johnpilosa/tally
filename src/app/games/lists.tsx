@@ -33,7 +33,7 @@ export default function ListsScreen() {
       <View style={styles.body}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View key={focusKey} style={{ gap: Spacing.three }}>
-            <ScreenTitle>{t.games.listsTitle}</ScreenTitle>
+            <ScreenTitle rule>{t.games.listsTitle}</ScreenTitle>
 
             <Appear options={{ index: 1 }} style={styles.newRow}>
               <TextInput

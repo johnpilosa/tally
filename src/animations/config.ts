@@ -234,5 +234,14 @@ export const ChipLap = {
    * Cuánto espera el contorno del filtro anterior antes de empezar a irse. Con el mismo valor
    * que `duration`, se va justo cuando el nuevo termina de dibujarse.
    */
-  leaveDelay: 340,
+  leaveDelay: 140,
+};
+
+/** La lista de My Games al cambiar de filtro. */
+export const FilterSwitch = {
+  /**
+   * Cuánto tarda la lista actual en desvanecerse antes de que entre la del nuevo filtro, en
+   * milisegundos.
+   */
+  leave: 140,
 };

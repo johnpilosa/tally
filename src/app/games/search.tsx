@@ -54,7 +54,7 @@ export default function SearchGameScreen() {
     <View style={styles.screen}>
       <ScreenHeader app="games" right={<GamesMenuButton />} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <ScreenTitle>{t.games.navSearch}</ScreenTitle>
+        <ScreenTitle rule>{t.games.navSearch}</ScreenTitle>
         <Appear options={{ index: 2 }} style={styles.inputBlock}>
           <TextInput
             value={query}

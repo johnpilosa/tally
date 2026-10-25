@@ -116,6 +116,13 @@ function Review({ game }: { game: Game }) {
             ) : null}
             <Text style={styles.link}>{hasReview ? t.games.editReview : t.games.startReview}</Text>
           </Pressable>
+          {hasReview && (
+            <Pressable
+              onPress={() => router.push({ pathname: '/games/share', params: { id: game.id } })}
+              style={({ pressed }) => pressed && { opacity: 0.6 }}>
+              <Text style={styles.link}>{t.games.shareAsImage}</Text>
+            </Pressable>
+          )}
         </Section>
 
         {/* Insights */}

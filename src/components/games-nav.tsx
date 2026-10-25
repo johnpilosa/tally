@@ -163,7 +163,7 @@ export function GamesTabBar() {
     lists: t.games.tabLists,
   };
   // Escribiendo una reseña no se muestra: esa pantalla es solo para escribir.
-  if (pathname.startsWith('/games/write')) return null;
+  if (pathname.startsWith('/games/write') || pathname.startsWith('/games/share')) return null;
 
   return (
     <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, Spacing.three) }]}>

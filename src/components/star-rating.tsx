@@ -55,6 +55,36 @@ export function StarRating({
   );
 }
 
+/** Las mismas cinco estrellas, solo para mostrar (sin tocar), por ejemplo en la imagen de la reseña. */
+export function Stars({
+  value,
+  size = 16,
+  color = Colors.dark.text,
+}: {
+  value: number | undefined;
+  size?: number;
+  color?: string;
+}) {
+  return (
+    <View style={[styles.row, { gap: size / 4 }]}>
+      {[1, 2, 3, 4, 5].map((n) => {
+        const on = (value ?? 0) >= n;
+        return (
+          <Svg key={n} width={size} height={size} viewBox="0 0 24 24">
+            <Polygon
+              points={STAR}
+              fill={on ? color : 'none'}
+              stroke={on ? color : Colors.dark.textSecondary}
+              strokeWidth={1.2}
+              strokeLinejoin="round"
+            />
+          </Svg>
+        );
+      })}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 6 },
 });

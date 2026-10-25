@@ -186,6 +186,12 @@ const en = {
     reviewSubtitlePlaceholder: 'A subtitle, a one-line verdict…',
     reviewBodyPlaceholder: 'Start writing…',
     words: (n: number) => (n === 1 ? '1 WORD' : `${n} WORDS`),
+    shareAsImage: 'SHARE AS IMAGE →',
+    shareTitle: 'SHARE',
+    shareImage: 'SHARE IMAGE',
+    downloadImage: 'DOWNLOAD IMAGE',
+    creatingImage: 'CREATING…',
+    imageFailed: "COULDN'T CREATE THE IMAGE",
   },
 };
 
@@ -362,6 +368,12 @@ const es: Strings = {
     reviewSubtitlePlaceholder: 'Un subtítulo, un veredicto en una línea…',
     reviewBodyPlaceholder: 'Empieza a escribir…',
     words: (n) => (n === 1 ? '1 PALABRA' : `${n} PALABRAS`),
+    shareAsImage: 'COMPARTIR COMO IMAGEN →',
+    shareTitle: 'COMPARTIR',
+    shareImage: 'COMPARTIR IMAGEN',
+    downloadImage: 'DESCARGAR IMAGEN',
+    creatingImage: 'CREANDO…',
+    imageFailed: 'NO SE PUDO CREAR LA IMAGEN',
   },
 };
 
