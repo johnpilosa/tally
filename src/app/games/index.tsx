@@ -11,6 +11,7 @@ import { BouncePressable } from '@/components/bounce-pressable';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames, type Game } from '@/lib/games';
+import { useFocusKey } from '@/hooks/use-focus-key';
 import { useI18n } from '@/lib/i18n';
 import { yearOf } from '@/lib/wiki-games';
 
@@ -24,6 +25,7 @@ export default function MyGamesScreen() {
   const { games, loaded, updateGame } = useGames();
   const [filter, setFilter] = useState<Filter>('all');
   const [listsFor, setListsFor] = useState<string | null>(null);
+  const focusKey = useFocusKey();
 
   const shown = games.filter((g) => {
     if (filter === 'all') return true;
@@ -64,35 +66,39 @@ export default function MyGamesScreen() {
             <View style={styles.titleWrap}>
               <ScreenTitle>{t.games.myGames}</ScreenTitle>
             </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.filtersScroll}
-              contentContainerStyle={styles.filters}>
-              {filters.map((f) => (
-                <Pressable
-                  key={f.id}
-                  onPress={() => setFilter(f.id)}
-                  style={[styles.chip, filter === f.id && styles.chipActive]}>
-                  {filter === f.id && <View style={styles.dot} />}
-                  <Text style={[styles.chipText, filter === f.id && styles.chipTextActive]}>
-                    {f.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
+            <Animated.View entering={popIn({ index: 1 })}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.filtersScroll}
+                contentContainerStyle={styles.filters}>
+                {filters.map((f) => (
+                  <Pressable
+                    key={f.id}
+                    onPress={() => setFilter(f.id)}
+                    style={[styles.chip, filter === f.id && styles.chipActive]}>
+                    {filter === f.id && <View style={styles.dot} />}
+                    <Text style={[styles.chipText, filter === f.id && styles.chipTextActive]}>
+                      {f.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </Animated.View>
 
             <ScrollView contentContainerStyle={styles.list}>
-              {shown.length === 0 && <Text style={styles.label}>{t.games.emptyFilter}</Text>}
-              {shown.map((g, i) => (
-                <GameRow
-                  key={g.id}
-                  game={g}
-                  index={i}
-                  onToggleFavorite={() => updateGame(g.id, { favorite: !g.favorite })}
-                  onLists={() => setListsFor(g.id)}
-                />
-              ))}
+              <View key={focusKey} style={{ gap: Spacing.two }}>
+                {shown.length === 0 && <Text style={styles.label}>{t.games.emptyFilter}</Text>}
+                {shown.map((g, i) => (
+                  <GameRow
+                    key={g.id}
+                    game={g}
+                    index={i}
+                    onToggleFavorite={() => updateGame(g.id, { favorite: !g.favorite })}
+                    onLists={() => setListsFor(g.id)}
+                  />
+                ))}
+              </View>
             </ScrollView>
           </>
         )}

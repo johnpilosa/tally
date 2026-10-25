@@ -11,7 +11,6 @@ import {
   View,
 } from 'react-native';
 import Animated, {
-  FadeIn,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
@@ -20,7 +19,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Milestone, SwitchTally } from '@/animations/config';
+import { Milestone } from '@/animations/config';
+import { popIn } from '@/animations/presets';
 import { AnimatedCount } from '@/components/animated-count';
 import { ScreenHeader } from '@/components/screen-header';
 import { CounterButton } from '@/components/counter-button';
@@ -28,6 +28,7 @@ import { MilestoneBurst } from '@/components/milestone-burst';
 import { TallyChips } from '@/components/tally-chips';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useNow } from '@/hooks/use-now';
+import { useFocusKey } from '@/hooks/use-focus-key';
 import { useI18n } from '@/lib/i18n';
 import { useTallies } from '@/lib/tallies';
 import { countSince, formatDate, todayStart } from '@/lib/time';
@@ -43,6 +44,7 @@ export default function HomeScreen() {
   const { t, lang } = useI18n();
   const [adding, setAdding] = useState(false);
   const [celebrations, setCelebrations] = useState<Celebration[]>([]);
+  const focusKey = useFocusKey();
   const countScale = useSharedValue(1);
   const countPopStyle = useAnimatedStyle(() => ({ transform: [{ scale: countScale.get() }] }));
 
@@ -94,8 +96,8 @@ export default function HomeScreen() {
           behavior={Platform.OS === 'web' ? undefined : 'padding'}>
           {current ? (
             <Animated.View
-              key={current.id}
-              entering={FadeIn.duration(SwitchTally.duration)}
+              key={`${current.id}-${focusKey}`}
+              entering={popIn()}
               style={styles.center}>
               <View style={styles.titleBlock}>
                 <Pressable

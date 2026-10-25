@@ -1,7 +1,9 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
+
+import { popIn } from '@/animations/presets';
 
 import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
@@ -54,33 +56,35 @@ export default function SearchGameScreen() {
       <ScreenHeader app="games" right={<GamesMenuButton />} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <ScreenTitle>{t.games.navSearch}</ScreenTitle>
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          autoFocus
-          autoCorrect={false}
-          placeholder={t.games.searchPlaceholder}
-          placeholderTextColor={C.textSecondary}
-          style={styles.input}
-        />
-        <Text style={styles.hint}>
-          {shownState === 'loading'
-            ? t.games.searching
-            : shownState === 'error'
-              ? t.games.offline
-              : shownState === 'done' && shownHits.length === 0
-                ? t.games.noResults
-                : shownState === 'idle'
-                  ? t.games.searchHint
-                  : ' '}
-        </Text>
+        <Animated.View entering={popIn({ index: 2 })} style={styles.inputBlock}>
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            autoFocus
+            autoCorrect={false}
+            placeholder={t.games.searchPlaceholder}
+            placeholderTextColor={C.textSecondary}
+            style={styles.input}
+          />
+          <Text style={styles.hint}>
+            {shownState === 'loading'
+              ? t.games.searching
+              : shownState === 'error'
+                ? t.games.offline
+                : shownState === 'done' && shownHits.length === 0
+                  ? t.games.noResults
+                  : shownState === 'idle'
+                    ? t.games.searchHint
+                    : ' '}
+          </Text>
+        </Animated.View>
 
         {shownHits.length > 0 && (
-          <Animated.View entering={FadeIn.duration(150)} style={styles.dropdown}>
+          <View style={styles.dropdown}>
             {shownHits.map((hit, i) => {
               const added = games.some((g) => g.id === hit.key);
               return (
-                <Animated.View key={hit.key} entering={FadeInDown.delay(i * 25).duration(180)}>
+                <Animated.View key={hit.key} entering={popIn({ index: Math.min(i, 8) })}>
                   <Pressable
                     onPress={() =>
                       router.push({ pathname: '/games/game', params: { key: hit.key } })
@@ -103,7 +107,7 @@ export default function SearchGameScreen() {
                 </Animated.View>
               );
             })}
-          </Animated.View>
+          </View>
         )}
 
         <Text style={[styles.hint, styles.source]}>{t.games.source}</Text>
@@ -122,6 +126,7 @@ const styles = StyleSheet.create({
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
   },
+  inputBlock: { gap: Spacing.three },
   input: {
     fontFamily: Type.dot,
     fontSize: 28,

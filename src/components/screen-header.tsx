@@ -1,9 +1,11 @@
-import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
+import { TitleTyping } from '@/animations/config';
+import { registerTitle } from '@/animations/title-bus';
 import { AppSwitcher, type AppId } from '@/components/app-switcher';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 
@@ -71,9 +73,55 @@ export function ScreenHeader({
   );
 }
 
-/** El título grande de las pantallas principales ("MY GAMES", "LISTS"…). */
+/**
+ * El título grande de las pantallas principales ("MY GAMES", "LISTS"…). Se escribe letra por
+ * letra cada vez que la pantalla aparece, y se borra letra por letra (desde la última) cuando
+ * la navegación se lo pide al cambiar de pestaña. Velocidades en `TitleTyping` (config.ts).
+ */
 export function ScreenTitle({ children }: { children: string }) {
-  return <Text style={styles.heading}>{children}</Text>;
+  const [shown, setShown] = useState(0);
+  const shownRef = useRef(0);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const stop = () => {
+        if (timer.current) clearInterval(timer.current);
+        timer.current = null;
+      };
+      // Avanza o retrocede una letra por vez hasta `to`, y al llegar llama a `done`.
+      const run = (to: number, msPerChar: number, done?: () => void) => {
+        stop();
+        timer.current = setInterval(() => {
+          const n = shownRef.current + (to > shownRef.current ? 1 : -1);
+          shownRef.current = n;
+          setShown(n);
+          if (n === to) {
+            stop();
+            done?.();
+          }
+        }, msPerChar);
+      };
+
+      shownRef.current = 0;
+      setShown(0);
+      run(children.length, TitleTyping.typeMs);
+      const unregister = registerTitle({
+        erase: (done) => (shownRef.current === 0 ? done() : run(0, TitleTyping.eraseMs, done)),
+      });
+      return () => {
+        unregister();
+        stop();
+      };
+    }, [children]),
+  );
+
+  return (
+    <Text style={styles.heading} accessibilityLabel={children}>
+      {/* El espacio invisible mantiene el alto de la línea mientras no hay letras. */}
+      {children.slice(0, shown) || '\u200b'}
+    </Text>
+  );
 }
 
 const styles = StyleSheet.create({

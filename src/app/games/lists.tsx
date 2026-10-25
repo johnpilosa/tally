@@ -9,6 +9,7 @@ import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames, type GameList } from '@/lib/games';
+import { useFocusKey } from '@/hooks/use-focus-key';
 import { useI18n } from '@/lib/i18n';
 
 const C = Colors.dark;
@@ -18,6 +19,7 @@ export default function ListsScreen() {
   const { t } = useI18n();
   const { lists, createList } = useGames();
   const [name, setName] = useState('');
+  const focusKey = useFocusKey();
 
   const create = () => {
     const trimmed = name.trim();
@@ -31,34 +33,36 @@ export default function ListsScreen() {
       <ScreenHeader app="games" right={<GamesMenuButton />} />
       <View style={styles.body}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <ScreenTitle>{t.games.listsTitle}</ScreenTitle>
+          <View key={focusKey} style={{ gap: Spacing.three }}>
+            <ScreenTitle>{t.games.listsTitle}</ScreenTitle>
 
-          <View style={styles.newRow}>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              onSubmitEditing={create}
-              placeholder={t.games.newListPlaceholder}
-              placeholderTextColor={C.textSecondary}
-              returnKeyType="done"
-              style={styles.newInput}
-            />
-            <Pressable
-              onPress={create}
-              disabled={!name.trim()}
-              style={{ opacity: name.trim() ? 1 : 0.3 }}>
-              <Text style={styles.link}>{t.games.createList}</Text>
-            </Pressable>
+            <Animated.View entering={popIn({ index: 1 })} style={styles.newRow}>
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                onSubmitEditing={create}
+                placeholder={t.games.newListPlaceholder}
+                placeholderTextColor={C.textSecondary}
+                returnKeyType="done"
+                style={styles.newInput}
+              />
+              <Pressable
+                onPress={create}
+                disabled={!name.trim()}
+                style={{ opacity: name.trim() ? 1 : 0.3 }}>
+                <Text style={styles.link}>{t.games.createList}</Text>
+              </Pressable>
+            </Animated.View>
+
+            {lists.length === 0 ? (
+              <View style={styles.empty}>
+                <Text style={styles.emptyTitle}>{t.games.noListsYet}</Text>
+                <Text style={styles.label}>{t.games.noListsHint}</Text>
+              </View>
+            ) : (
+              lists.map((list, i) => <ListRow key={list.id} list={list} index={i} />)
+            )}
           </View>
-
-          {lists.length === 0 ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>{t.games.noListsYet}</Text>
-              <Text style={styles.label}>{t.games.noListsHint}</Text>
-            </View>
-          ) : (
-            lists.map((list, i) => <ListRow key={list.id} list={list} index={i} />)
-          )}
         </ScrollView>
       </View>
     </View>

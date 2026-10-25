@@ -3,9 +3,13 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenHeader } from '@/components/screen-header';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
+
+import { popIn } from '@/animations/presets';
 
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useNow } from '@/hooks/use-now';
+import { useFocusKey } from '@/hooks/use-focus-key';
 import { useI18n } from '@/lib/i18n';
 import { useTallies } from '@/lib/tallies';
 import { countSince, formatAgo, formatClock, groupByDay, todayStart } from '@/lib/time';
@@ -19,6 +23,7 @@ export default function TallyScreen() {
   const now = useNow();
   const { t, lang } = useI18n();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const focusKey = useFocusKey();
 
   const tally = tallies.find((t) => t.id === id);
 
@@ -52,45 +57,53 @@ export default function TallyScreen() {
     <View style={styles.screen}>
       <ScreenHeader back title={t.historyTitle} />
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.hero}>
-          <Text style={styles.name}>{tally.name}</Text>
-          <Text style={styles.bigCount}>{tally.events.length}</Text>
-          <Text style={styles.meta}>
-            {last ? t.lastTime(formatAgo(last, now, lang).toUpperCase()) : t.stillNoMarks}
-          </Text>
-        </View>
-
-        <View style={styles.stats}>
-          {stats.map((s) => (
-            <View key={s.label} style={styles.stat}>
-              <Text style={styles.statValue}>{s.value}</Text>
-              <Text style={styles.meta}>{s.label}</Text>
-            </View>
-          ))}
-        </View>
-
-        {groups.map((group, g) => (
-          <View key={group.label} style={styles.group}>
+        <View key={focusKey} style={{ gap: Spacing.four }}>
+          <Animated.View entering={popIn()} style={styles.hero}>
+            <Text style={styles.name}>{tally.name}</Text>
+            <Text style={styles.bigCount}>{tally.events.length}</Text>
             <Text style={styles.meta}>
-              {group.label.toUpperCase()} · {group.items.length}
+              {last ? t.lastTime(formatAgo(last, now, lang).toUpperCase()) : t.stillNoMarks}
             </Text>
-            <View style={styles.groupList}>
-              {group.items.map((ts, i) => (
-                <View key={ts} style={[styles.historyRow, i > 0 && styles.rowDivider]}>
-                  {/* La marca más reciente lleva el punto rojo. */}
-                  <View style={[styles.dot, g === 0 && i === 0 && styles.dotNewest]} />
-                  <Text style={styles.time}>{formatClock(ts)}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        ))}
+          </Animated.View>
 
-        <Pressable onPress={onDelete} onBlur={() => setConfirmDelete(false)} style={styles.delete}>
-          <Text style={[styles.link, { color: C.accent }]}>
-            {confirmDelete ? t.confirmAgain : t.deleteCounter}
-          </Text>
-        </Pressable>
+          <Animated.View entering={popIn({ index: 1 })} style={styles.stats}>
+            {stats.map((s) => (
+              <View key={s.label} style={styles.stat}>
+                <Text style={styles.statValue}>{s.value}</Text>
+                <Text style={styles.meta}>{s.label}</Text>
+              </View>
+            ))}
+          </Animated.View>
+
+          {groups.map((group, g) => (
+            <Animated.View
+              key={group.label}
+              entering={popIn({ index: Math.min(g + 2, 8) })}
+              style={styles.group}>
+              <Text style={styles.meta}>
+                {group.label.toUpperCase()} · {group.items.length}
+              </Text>
+              <View style={styles.groupList}>
+                {group.items.map((ts, i) => (
+                  <View key={ts} style={[styles.historyRow, i > 0 && styles.rowDivider]}>
+                    {/* La marca más reciente lleva el punto rojo. */}
+                    <View style={[styles.dot, g === 0 && i === 0 && styles.dotNewest]} />
+                    <Text style={styles.time}>{formatClock(ts)}</Text>
+                  </View>
+                ))}
+              </View>
+            </Animated.View>
+          ))}
+
+          <Pressable
+            onPress={onDelete}
+            onBlur={() => setConfirmDelete(false)}
+            style={styles.delete}>
+            <Text style={[styles.link, { color: C.accent }]}>
+              {confirmDelete ? t.confirmAgain : t.deleteCounter}
+            </Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </View>
   );

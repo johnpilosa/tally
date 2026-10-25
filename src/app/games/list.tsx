@@ -8,6 +8,7 @@ import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useGames } from '@/lib/games';
+import { useFocusKey } from '@/hooks/use-focus-key';
 import { useI18n } from '@/lib/i18n';
 import { yearOf } from '@/lib/wiki-games';
 
@@ -20,6 +21,7 @@ export default function ListScreen() {
   const { games, lists, loaded, toggleInList } = useGames();
   const list = lists.find((l) => l.id === id);
   const inList = games.filter((g) => g.listIds.includes(id));
+  const focusKey = useFocusKey();
 
   return (
     <View style={styles.screen}>
@@ -30,42 +32,44 @@ export default function ListScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <Animated.View entering={popIn()}>
-            <ScreenTitle>{list.name.toUpperCase()}</ScreenTitle>
-            <Text style={styles.label}>{t.games.gamesCount(inList.length)}</Text>
-          </Animated.View>
-
-          {inList.length === 0 && <Text style={styles.label}>{t.games.listEmpty}</Text>}
-
-          {inList.map((g, i) => (
-            <Animated.View
-              key={g.id}
-              entering={popIn({ index: Math.min(i + 1, 8) })}
-              exiting={FadeOut.duration(200)}
-              layout={LinearTransition}
-              style={styles.row}>
-              <Pressable
-                onPress={() => router.push({ pathname: '/games/review', params: { id: g.id } })}
-                style={({ pressed }) => [styles.rowMain, pressed && { opacity: 0.6 }]}>
-                {g.coverUrl ? (
-                  <Image source={{ uri: g.coverUrl }} style={styles.thumb} contentFit="cover" />
-                ) : (
-                  <View style={styles.thumb} />
-                )}
-                <View style={styles.rowText}>
-                  <Text style={styles.rowTitle} numberOfLines={2}>
-                    {g.title.toUpperCase()}
-                  </Text>
-                  <Text style={styles.label}>
-                    {[t.games[g.status], yearOf(g.description)].filter(Boolean).join('  ·  ')}
-                  </Text>
-                </View>
-              </Pressable>
-              <Pressable hitSlop={10} onPress={() => toggleInList(g.id, list.id)}>
-                <Text style={styles.label}>✕</Text>
-              </Pressable>
+          <View key={focusKey} style={{ gap: Spacing.three }}>
+            <Animated.View entering={popIn()}>
+              <ScreenTitle>{list.name.toUpperCase()}</ScreenTitle>
+              <Text style={styles.label}>{t.games.gamesCount(inList.length)}</Text>
             </Animated.View>
-          ))}
+
+            {inList.length === 0 && <Text style={styles.label}>{t.games.listEmpty}</Text>}
+
+            {inList.map((g, i) => (
+              <Animated.View
+                key={g.id}
+                entering={popIn({ index: Math.min(i + 1, 8) })}
+                exiting={FadeOut.duration(200)}
+                layout={LinearTransition}
+                style={styles.row}>
+                <Pressable
+                  onPress={() => router.push({ pathname: '/games/review', params: { id: g.id } })}
+                  style={({ pressed }) => [styles.rowMain, pressed && { opacity: 0.6 }]}>
+                  {g.coverUrl ? (
+                    <Image source={{ uri: g.coverUrl }} style={styles.thumb} contentFit="cover" />
+                  ) : (
+                    <View style={styles.thumb} />
+                  )}
+                  <View style={styles.rowText}>
+                    <Text style={styles.rowTitle} numberOfLines={2}>
+                      {g.title.toUpperCase()}
+                    </Text>
+                    <Text style={styles.label}>
+                      {[t.games[g.status], yearOf(g.description)].filter(Boolean).join('  ·  ')}
+                    </Text>
+                  </View>
+                </Pressable>
+                <Pressable hitSlop={10} onPress={() => toggleInList(g.id, list.id)}>
+                  <Text style={styles.label}>✕</Text>
+                </Pressable>
+              </Animated.View>
+            ))}
+          </View>
         </ScrollView>
       )}
     </View>

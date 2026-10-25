@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Line, Rect } from 'react-native-svg';
 
 import { popIn } from '@/animations/presets';
+import { eraseTitleThen } from '@/animations/title-bus';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useI18n } from '@/lib/i18n';
@@ -25,10 +26,15 @@ const SECTIONS: { id: GamesSection; route: string }[] = [
  * Ir a una sección como en una barra de pestañas: se cierran las pantallas abiertas encima
  * (fichas, reseñas) y se cambia a la sección, sin ir apilando historial.
  */
-function go(section: GamesSection) {
+function go(section: GamesSection, from: GamesSection) {
   const route = SECTIONS.find((s) => s.id === section)!.route;
-  if (router.canDismiss()) router.dismissAll();
-  router.replace(route as '/');
+  const navigate = () => {
+    if (router.canDismiss()) router.dismissAll();
+    router.replace(route as '/');
+  };
+  // Entre pestañas distintas, el título actual se borra letra por letra antes de cambiar.
+  if (section !== from) eraseTitleThen(navigate);
+  else navigate();
 }
 
 /** En qué sección estamos según la ruta. Las fichas y reseñas cuentan como "mis juegos". */
@@ -108,10 +114,11 @@ export function GamesMenuButton() {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
+  const current = sectionOf(usePathname());
 
   const pick = (section: GamesSection) => {
     setOpen(false);
-    go(section);
+    go(section, current);
   };
 
   return (
@@ -163,7 +170,7 @@ export function GamesTabBar() {
         return (
           <Pressable
             key={s.id}
-            onPress={() => go(s.id)}
+            onPress={() => go(s.id, current)}
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             style={({ pressed }) => [styles.tab, pressed && { opacity: 0.6 }]}>

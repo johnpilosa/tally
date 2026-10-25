@@ -52,11 +52,6 @@ export const CountChange = {
   stiffness: 260,
 };
 
-/** Al cambiar de contador, cuánto tarda en aparecer el nuevo. */
-export const SwitchTally = {
-  duration: 250,
-};
-
 /* ─────────────────────────── ÍCONOS ─────────────────────────── */
 
 /** Los símbolos de insulto: cada uno salta y se ladea, uno detrás de otro, y el grupo tiembla. */
@@ -177,9 +172,9 @@ export const CustomMotion = {
 /* ─────────────────────────── VENTANAS Y MENÚS ─────────────────────────── */
 
 /**
- * Menús, dropdowns y popups (el menú de apps, "agregado a la lista", etc.).
- * La idea es que se sientan rápidos pero suaves: aparecen en un cuarto de segundo, con un
- * pequeño desplazamiento y casi sin crecer, y frenan limpio al llegar.
+ * Cómo aparece TODO en pantalla: menús, popups, filas de listas, tarjetas, secciones.
+ * Se desvanece de transparente a visible mientras sube un poco desde abajo hasta su lugar,
+ * rápido y frenando limpio. Nunca crece ni hace zoom.
  */
 export const Overlay = {
   /** Qué tan fuerte se desenfoca el fondo (1 a 100). */
@@ -192,10 +187,10 @@ export const Overlay = {
   /** Cómo entra el contenido (menú, popup, dropdown). */
   enter: {
     duration: 240,
-    /** Desde cuántos puntos se desliza hasta su lugar. */
-    rise: 8,
-    /** Desde qué tamaño crece (1 = sin crecer). */
-    fromScale: 0.97,
+    /** Desde cuántos puntos más abajo sube hasta su lugar. */
+    rise: 12,
+    /** Desde qué tamaño crece. 1 = sin crecer (sin zoom). */
+    fromScale: 1,
     /** Retraso entre una opción y la siguiente en un menú (cascada sutil). */
     stagger: 25,
   },
@@ -209,4 +204,17 @@ export const Overlay = {
     /** Cuánto espera cada opción antes de empezar a salir detrás de la anterior. */
     stagger: 90,
   },
+};
+
+/* ─────────────────────────── TÍTULOS ─────────────────────────── */
+
+/**
+ * Los títulos grandes ("MY GAMES", "SEARCH", "LISTS") se escriben letra por letra al aparecer,
+ * y al cambiar de pestaña se borran desde la última letra hasta la primera.
+ */
+export const TitleTyping = {
+  /** Milisegundos por letra al escribir. */
+  typeMs: 26,
+  /** Milisegundos por letra al borrar (un poco más rápido que escribir). */
+  eraseMs: 16,
 };

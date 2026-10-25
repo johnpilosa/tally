@@ -2,7 +2,9 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
+
+import { popIn } from '@/animations/presets';
 
 import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader } from '@/components/screen-header';
@@ -65,7 +67,7 @@ function Review({ game }: { game: Game }) {
       <ScreenHeader back="/games" title={t.games.reviewTitle} right={<GamesMenuButton />} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {/* Encabezado: portada, título, estado y favorito */}
-        <Animated.View entering={FadeInDown.duration(250)} style={styles.header}>
+        <Animated.View entering={popIn()} style={styles.header}>
           {game.coverUrl ? (
             <Image source={{ uri: game.coverUrl }} style={styles.cover} contentFit="cover" />
           ) : (
@@ -135,7 +137,7 @@ function Review({ game }: { game: Game }) {
             game.insights.map((ins) => (
               <Animated.View
                 key={ins.id}
-                entering={FadeInDown.duration(200)}
+                entering={popIn()}
                 layout={LinearTransition}
                 style={styles.insight}>
                 <View style={styles.dot} />
@@ -193,7 +195,7 @@ function Review({ game }: { game: Game }) {
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Animated.View entering={FadeInDown.delay(100).duration(250)} style={styles.section}>
+    <Animated.View entering={popIn({ index: 2 })} style={styles.section}>
       <Text style={styles.label}>{label}</Text>
       {children}
     </Animated.View>

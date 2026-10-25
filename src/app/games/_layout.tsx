@@ -17,10 +17,11 @@ export default function GamesLayout() {
           headerShown: false,
           contentStyle: { backgroundColor: Colors.dark.background },
         }}>
-        {/* Las tres pestañas cambian con un fundido rápido; lo demás entra deslizando. */}
-        <Stack.Screen name="index" options={{ animation: 'fade', animationDuration: 150 }} />
-        <Stack.Screen name="search" options={{ animation: 'fade', animationDuration: 150 }} />
-        <Stack.Screen name="lists" options={{ animation: 'fade', animationDuration: 150 }} />
+        {/* Las pestañas cambian al instante: el título se borra y escribe solo, y el contenido
+            aparece con su propia animación. Lo demás entra deslizando. */}
+        <Stack.Screen name="index" options={{ animation: 'none' }} />
+        <Stack.Screen name="search" options={{ animation: 'none' }} />
+        <Stack.Screen name="lists" options={{ animation: 'none' }} />
       </Stack>
       <GamesTabBar />
     </View>

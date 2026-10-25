@@ -11,6 +11,7 @@ import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader } from '@/components/screen-header';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useGames, type GameStatus } from '@/lib/games';
+import { useFocusKey } from '@/hooks/use-focus-key';
 import { useI18n } from '@/lib/i18n';
 import {
   fetchGame,
@@ -40,6 +41,7 @@ export default function GameScreen() {
   const [addedOpen, setAddedOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [shotOpen, setShotOpen] = useState<Screenshot | null>(null);
+  const focusKey = useFocusKey();
 
   useEffect(() => {
     if (!key) return;
@@ -93,105 +95,112 @@ export default function GameScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <Animated.View entering={popIn()} style={styles.titleBlock}>
-            <Title title={game.title} width={content} />
-            <View style={styles.metaRow}>
-              {year && <Text style={styles.metaChip}>{year}</Text>}
-              {saved && <Text style={[styles.metaChip, styles.metaChipOn]}>{t.games.inList}</Text>}
-            </View>
-          </Animated.View>
-
-          <Animated.View
-            entering={popIn({ index: 2 })}
-            style={[styles.boxes, { height: boxHeight }]}>
-            <Pressable onPress={() => setSummaryOpen(true)} style={styles.summaryBox}>
-              <Text style={styles.label}>{t.games.about}</Text>
-              <Text style={styles.summary}>{game.summary || t.games.noSummary}</Text>
-              {/* Se desvanece abajo en vez de cortarse de golpe. */}
-              <Svg style={styles.fade} pointerEvents="none">
-                <Defs>
-                  <LinearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-                    <Stop offset="0" stopColor={C.backgroundElement} stopOpacity="0" />
-                    <Stop offset="0.75" stopColor={C.backgroundElement} stopOpacity="1" />
-                  </LinearGradient>
-                </Defs>
-                <Rect width="100%" height="100%" fill="url(#fade)" />
-              </Svg>
-              <Text style={styles.readMore}>{t.games.readMore}</Text>
-            </Pressable>
-            <Cover url={game.coverUrl} width={coverWidth} />
-          </Animated.View>
-
-          <Animated.View entering={popIn({ index: 4 })} style={styles.actionsBlock}>
-            <View style={styles.actions}>
-              <Pressable
-                onPress={add}
-                disabled={!!saved || !info}
-                style={({ pressed }) => [
-                  styles.button,
-                  styles.grow,
-                  !saved && styles.buttonPrimary,
-                  pressed && { opacity: 0.7 },
-                ]}>
-                <Text style={[styles.buttonText, !saved && styles.buttonTextPrimary]}>
-                  {saved ? t.games.inList : t.games.addButton}
-                </Text>
-              </Pressable>
-
-              <View style={styles.statusWrap}>
-                <Pressable
-                  onPress={() => setStatusOpen((o) => !o)}
-                  style={({ pressed }) => [styles.button, pressed && { opacity: 0.7 }]}>
-                  <Text style={styles.buttonText}>
-                    {t.games[shownStatus]} {statusOpen ? '▴' : '▾'}
-                  </Text>
-                </Pressable>
-                {statusOpen && (
-                  <View style={styles.statusMenu}>
-                    {(['playing', 'played'] as const).map((s, i) => (
-                      <Animated.View key={s} entering={popIn({ direction: -1, index: i })}>
-                        <Pressable
-                          onPress={() => pickStatus(s)}
-                          style={({ pressed }) => [styles.statusItem, pressed && { opacity: 0.6 }]}>
-                          {s === shownStatus && <View style={styles.dot} />}
-                          <Text style={[styles.buttonText, s !== shownStatus && styles.dim]}>
-                            {t.games[s]}
-                          </Text>
-                        </Pressable>
-                      </Animated.View>
-                    ))}
-                  </View>
+          <View key={focusKey} style={{ gap: Spacing.four }}>
+            <Animated.View entering={popIn()} style={styles.titleBlock}>
+              <Title title={game.title} width={content} />
+              <View style={styles.metaRow}>
+                {year && <Text style={styles.metaChip}>{year}</Text>}
+                {saved && (
+                  <Text style={[styles.metaChip, styles.metaChipOn]}>{t.games.inList}</Text>
                 )}
               </View>
-            </View>
-            {saved && (
-              <Pressable onPress={openReview} style={styles.reviewLink}>
-                <Text style={styles.buttonText}>{t.games.openReview}</Text>
-              </Pressable>
-            )}
-          </Animated.View>
-
-          {shots.length > 0 && (
-            <Animated.View entering={popIn({ index: 6 })} style={styles.shotsBlock}>
-              <Text style={styles.label}>{t.games.screenshots}</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.shots}
-                style={styles.shotsScroll}>
-                {shots.map((shot) => (
-                  <Pressable key={shot.url} onPress={() => setShotOpen(shot)}>
-                    <Image
-                      source={{ uri: shot.url }}
-                      style={[styles.shot, { width: content * 0.78 }]}
-                      contentFit="cover"
-                      transition={300}
-                    />
-                  </Pressable>
-                ))}
-              </ScrollView>
             </Animated.View>
-          )}
+
+            <Animated.View
+              entering={popIn({ index: 2 })}
+              style={[styles.boxes, { height: boxHeight }]}>
+              <Pressable onPress={() => setSummaryOpen(true)} style={styles.summaryBox}>
+                <Text style={styles.label}>{t.games.about}</Text>
+                <Text style={styles.summary}>{game.summary || t.games.noSummary}</Text>
+                {/* Se desvanece abajo en vez de cortarse de golpe. */}
+                <Svg style={styles.fade} pointerEvents="none">
+                  <Defs>
+                    <LinearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+                      <Stop offset="0" stopColor={C.backgroundElement} stopOpacity="0" />
+                      <Stop offset="0.75" stopColor={C.backgroundElement} stopOpacity="1" />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect width="100%" height="100%" fill="url(#fade)" />
+                </Svg>
+                <Text style={styles.readMore}>{t.games.readMore}</Text>
+              </Pressable>
+              <Cover url={game.coverUrl} width={coverWidth} />
+            </Animated.View>
+
+            <Animated.View entering={popIn({ index: 4 })} style={styles.actionsBlock}>
+              <View style={styles.actions}>
+                <Pressable
+                  onPress={add}
+                  disabled={!!saved || !info}
+                  style={({ pressed }) => [
+                    styles.button,
+                    styles.grow,
+                    !saved && styles.buttonPrimary,
+                    pressed && { opacity: 0.7 },
+                  ]}>
+                  <Text style={[styles.buttonText, !saved && styles.buttonTextPrimary]}>
+                    {saved ? t.games.inList : t.games.addButton}
+                  </Text>
+                </Pressable>
+
+                <View style={styles.statusWrap}>
+                  <Pressable
+                    onPress={() => setStatusOpen((o) => !o)}
+                    style={({ pressed }) => [styles.button, pressed && { opacity: 0.7 }]}>
+                    <Text style={styles.buttonText}>
+                      {t.games[shownStatus]} {statusOpen ? '▴' : '▾'}
+                    </Text>
+                  </Pressable>
+                  {statusOpen && (
+                    <View style={styles.statusMenu}>
+                      {(['playing', 'played'] as const).map((s, i) => (
+                        <Animated.View key={s} entering={popIn({ direction: -1, index: i })}>
+                          <Pressable
+                            onPress={() => pickStatus(s)}
+                            style={({ pressed }) => [
+                              styles.statusItem,
+                              pressed && { opacity: 0.6 },
+                            ]}>
+                            {s === shownStatus && <View style={styles.dot} />}
+                            <Text style={[styles.buttonText, s !== shownStatus && styles.dim]}>
+                              {t.games[s]}
+                            </Text>
+                          </Pressable>
+                        </Animated.View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              </View>
+              {saved && (
+                <Pressable onPress={openReview} style={styles.reviewLink}>
+                  <Text style={styles.buttonText}>{t.games.openReview}</Text>
+                </Pressable>
+              )}
+            </Animated.View>
+
+            {shots.length > 0 && (
+              <Animated.View entering={popIn({ index: 6 })} style={styles.shotsBlock}>
+                <Text style={styles.label}>{t.games.screenshots}</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.shots}
+                  style={styles.shotsScroll}>
+                  {shots.map((shot) => (
+                    <Pressable key={shot.url} onPress={() => setShotOpen(shot)}>
+                      <Image
+                        source={{ uri: shot.url }}
+                        style={[styles.shot, { width: content * 0.78 }]}
+                        contentFit="cover"
+                        transition={300}
+                      />
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </Animated.View>
+            )}
+          </View>
         </ScrollView>
       )}
 
