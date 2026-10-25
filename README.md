@@ -1,56 +1,44 @@
-# Welcome to your Expo app 👋
+# TALLY
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A tiny counter app for keeping track of how often things happen. Black screen, thin white lines, dot-matrix numbers, inspired by Nothing OS dark mode.
 
-## Get started
+Tap the big circle, the icon inside does its thing, and the count goes up.
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+- **Last used, front and center.** The app opens on the counter you touched last.
+- **Animated icons.** Every counter gets an icon that plays when you tap:
+  - **Roundabout:** a car laps a top-down roundabout.
+  - **#$%&!:** comic-strip swear symbols jump in a wave and shake.
+  - **Nerd:** pushes up his glasses, blinks, tilts his head.
+  - **Star destroyer:** splits in half with a red flash and snaps back together.
+- **Build your own icons.** Drop in circles, squares, triangles, stars and lines, drag them around, and give each one a motion (spin, pulse, float, blink, orbit, shake, bounce) with its own speed and delay.
+- **Milestones.** Every 5th tap bursts pixels out of the button. Every 25th is a MEGA MILESTONE.
+- **History.** Today, last 7 days, total, and every tap grouped by day.
+- **Drag to reorder** your counters, rename them, undo the last tap.
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run it
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Then press `w` to open it in the browser, or scan the QR code with [Expo Go](https://expo.dev/go) on your phone.
 
-### Other setup steps
+## Tweak the animations
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Every timing, spring and distance lives in one file, [`src/animations/config.ts`](src/animations/config.ts), with comments explaining each value. Change a number, save, and the app updates instantly.
 
-## Learn more
+## Project map
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+src/
+  app/            screens (home, history, counter editor, icon editor)
+  icons/          the built-in animated icons and the custom icon renderer
+  components/     the counter button, chips row, milestone burst…
+  animations/     config.ts: all the animation knobs
+  lib/            storage for counters and custom icons, date helpers
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Built with [Expo](https://expo.dev), React Native and Reanimated.
