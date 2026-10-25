@@ -1,12 +1,14 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
 
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { CustomIconView } from '@/icons/custom';
+import { useI18n } from '@/lib/i18n';
 import {
   newShapeId,
+  ShapeKinds,
   useCustomIcons,
   type CustomIcon,
   type Motion,
@@ -20,13 +22,6 @@ const CANVAS = 260;
 const INNER = CANVAS * 0.72;
 const MAX_SHAPES = 12;
 
-const KIND_OPTIONS: { value: ShapeKind; label: string }[] = [
-  { value: 'circle', label: '○ CÍRCULO' },
-  { value: 'square', label: '□ CUADRADO' },
-  { value: 'triangle', label: '△ TRIÁNGULO' },
-  { value: 'star', label: '☆ ESTRELLA' },
-  { value: 'line', label: '— LÍNEA' },
-];
 const KIND_GLYPH: Record<ShapeKind, string> = {
   circle: '○',
   square: '□',
@@ -34,16 +29,7 @@ const KIND_GLYPH: Record<ShapeKind, string> = {
   star: '☆',
   line: '—',
 };
-const MOTION_OPTIONS: { value: Motion; label: string }[] = [
-  { value: 'none', label: 'NADA' },
-  { value: 'spin', label: 'GIRAR' },
-  { value: 'pulse', label: 'LATIR' },
-  { value: 'float', label: 'FLOTAR' },
-  { value: 'blink', label: 'PARPADEAR' },
-  { value: 'orbit', label: 'ORBITAR' },
-  { value: 'shake', label: 'TEMBLAR' },
-  { value: 'bounce', label: 'SALTAR' },
-];
+const MOTIONS: Motion[] = ['none', 'spin', 'pulse', 'float', 'blink', 'orbit', 'shake', 'bounce'];
 const SPEED_OPTIONS = [
   { value: 0.5, label: '0.5×' },
   { value: 1, label: '1×' },
@@ -86,6 +72,12 @@ export default function IconEditorScreen() {
 
 function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
   const { saveIcon, deleteIcon } = useCustomIcons();
+  const { t } = useI18n();
+  const kindOptions = ShapeKinds.map((k) => ({
+    value: k,
+    label: `${KIND_GLYPH[k]} ${t.kinds[k]}`,
+  }));
+  const motionOptions = MOTIONS.map((m) => ({ value: m, label: t.motions[m] }));
 
   const [draft, setDraft] = useState<CustomIcon>(
     () => existing ?? { id: newShapeId(), name: '', shapes: [newShape('circle')] },
@@ -129,7 +121,7 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
   };
 
   const save = () => {
-    saveIcon({ ...draft, name: draft.name.trim() || 'MI ÍCONO' });
+    saveIcon({ ...draft, name: draft.name.trim() || t.myIcon });
     router.back();
   };
 
@@ -143,10 +135,13 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
   // El gesto se crea una sola vez: si se rehiciera en cada redibujado (y al arrastrar se redibuja
   // todo el rato), se reiniciaría a mitad del arrastre. Por eso lee la forma elegida desde un ref.
   const latest = useRef({ selected, setDraft, play });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- se actualiza en cada redibujado a propósito
   useEffect(() => {
     latest.current = { selected, setDraft, play };
   });
   const dragStart = useRef({ id: '', x: 50, y: 50 });
+  // El linter cree que los refs se leen al dibujar, pero solo se leen cuando ocurre el gesto.
+  /* eslint-disable react-hooks/refs */
   const gesture = useMemo(() => {
     const unit = INNER / 100;
     // Funciones normales (no escritas dentro de la cadena del gesto) para que corran en JS como
@@ -170,29 +165,29 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
     const tap = Gesture.Tap().runOnJS(true).onEnd(onTap);
     return Gesture.Exclusive(pan, tap);
   }, []);
+  /* eslint-enable react-hooks/refs */
 
   return (
     <View style={styles.screen}>
+      <Stack.Screen options={{ title: t.iconEditorTitle }} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <GestureDetector gesture={gesture}>
-          <View style={styles.canvas} accessibilityLabel="Lienzo del ícono">
+          <View style={styles.canvas} accessibilityLabel={t.canvasA11y}>
             <CustomIconView icon={draft} trigger={trigger} size={INNER} selectedId={selectedId} />
           </View>
         </GestureDetector>
-        <Text style={[styles.hint, styles.centerText]}>
-          ARRASTRA PARA MOVER LA FORMA · TOCA PARA PROBAR
-        </Text>
+        <Text style={[styles.hint, styles.centerText]}>{t.canvasHint}</Text>
 
-        <Label>NOMBRE</Label>
+        <Label>{t.name}</Label>
         <TextInput
           value={draft.name}
           onChangeText={(name) => setDraft((d) => ({ ...d, name }))}
-          placeholder="MI ÍCONO"
+          placeholder={t.myIcon}
           placeholderTextColor={C.textSecondary}
           style={styles.nameInput}
         />
 
-        <Label>FORMAS</Label>
+        <Label>{t.shapes}</Label>
         <View style={styles.wrap}>
           {draft.shapes.map((s, i) => (
             <Chip
@@ -205,7 +200,7 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
         </View>
         {draft.shapes.length < MAX_SHAPES && (
           <View style={styles.wrap}>
-            {KIND_OPTIONS.map((k) => (
+            {kindOptions.map((k) => (
               <Chip key={k.value} label={`+ ${k.label}`} onPress={() => addShape(k.value)} />
             ))}
           </View>
@@ -213,22 +208,22 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
 
         {selected ? (
           <View style={styles.panel}>
-            <Label>FORMA</Label>
+            <Label>{t.shape}</Label>
             <Options
-              options={KIND_OPTIONS}
+              options={kindOptions}
               value={selected.kind}
               onChange={(kind) => updateShape({ kind })}
             />
 
             <View style={styles.steppers}>
               <Stepper
-                label="TAMAÑO"
+                label={t.size}
                 value={selected.size}
                 onChange={(size) => updateShape({ size: clamp(size, 5, 100) })}
                 step={5}
               />
               <Stepper
-                label="GIRO"
+                label={t.rotation}
                 value={selected.rotation}
                 suffix="°"
                 onChange={(rotation) => updateShape({ rotation: (rotation + 360) % 360 })}
@@ -236,45 +231,45 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
               />
             </View>
 
-            <Label>ESTILO</Label>
+            <Label>{t.style}</Label>
             <View style={styles.wrap}>
               <Chip
-                label="LÍNEA"
+                label={t.outline}
                 active={!selected.filled}
                 onPress={() => updateShape({ filled: false })}
               />
               <Chip
-                label="RELLENO"
+                label={t.filled}
                 active={selected.filled}
                 onPress={() => updateShape({ filled: true })}
               />
               <Chip
-                label="BLANCO"
+                label={t.white}
                 active={selected.color === 'white'}
                 onPress={() => updateShape({ color: 'white' })}
               />
               <Chip
-                label="● ROJO"
+                label={t.red}
                 active={selected.color === 'red'}
                 onPress={() => updateShape({ color: 'red' })}
               />
             </View>
 
-            <Label>MOVIMIENTO</Label>
+            <Label>{t.motion}</Label>
             <Options
-              options={MOTION_OPTIONS}
+              options={motionOptions}
               value={selected.motion}
               onChange={(motion) => updateShape({ motion }, true)}
             />
 
-            <Label>VELOCIDAD</Label>
+            <Label>{t.speed}</Label>
             <Options
               options={SPEED_OPTIONS}
               value={selected.speed}
               onChange={(speed) => updateShape({ speed }, true)}
             />
 
-            <Label>RETRASO</Label>
+            <Label>{t.delay}</Label>
             <Options
               options={DELAY_OPTIONS}
               value={selected.delay}
@@ -283,24 +278,24 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
 
             <View style={[styles.wrap, styles.shapeActions]}>
               {draft.shapes.length < MAX_SHAPES && (
-                <Chip label="DUPLICAR" onPress={duplicateShape} />
+                <Chip label={t.duplicate} onPress={duplicateShape} />
               )}
-              <Chip label="ELIMINAR FORMA" danger onPress={removeShape} />
+              <Chip label={t.deleteShape} danger onPress={removeShape} />
             </View>
           </View>
         ) : (
-          <Text style={styles.hint}>AGREGA UNA FORMA PARA EMPEZAR</Text>
+          <Text style={styles.hint}>{t.addShapeToStart}</Text>
         )}
 
         <Pressable
           onPress={save}
           style={({ pressed }) => [styles.saveButton, { opacity: pressed ? 0.6 : 1 }]}>
-          <Text style={styles.saveText}>GUARDAR ÍCONO</Text>
+          <Text style={styles.saveText}>{t.saveIcon}</Text>
         </Pressable>
         {existing && (
           <Pressable onPress={onDelete} style={styles.deleteButton}>
             <Text style={[styles.hint, { color: C.accent }]}>
-              {confirmDelete ? '¿SEGURO? TOCA OTRA VEZ' : 'ELIMINAR ÍCONO'}
+              {confirmDelete ? t.confirmAgain : t.deleteIcon}
             </Text>
           </Pressable>
         )}

@@ -27,6 +27,7 @@ import { MilestoneBurst } from '@/components/milestone-burst';
 import { TallyChips } from '@/components/tally-chips';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useNow } from '@/hooks/use-now';
+import { useI18n } from '@/lib/i18n';
 import { useTallies } from '@/lib/tallies';
 import { countSince, formatDate, todayStart } from '@/lib/time';
 
@@ -38,6 +39,7 @@ type Celebration = { key: number; value: number; big: boolean };
 export default function HomeScreen() {
   const { tallies, loaded, current, increment, undo, select, moveTally } = useTallies();
   const now = useNow();
+  const { t, lang } = useI18n();
   const [adding, setAdding] = useState(false);
   const [celebrations, setCelebrations] = useState<Celebration[]>([]);
   const countScale = useSharedValue(1);
@@ -78,11 +80,14 @@ export default function HomeScreen() {
           behavior={Platform.OS === 'web' ? undefined : 'padding'}>
           <View style={styles.topBar}>
             <Text style={styles.brand}>TALLY</Text>
-            {current && (
-              <Pressable hitSlop={12} onPress={() => router.push(`/tally/${current.id}`)}>
-                <Text style={styles.link}>HISTORIAL →</Text>
-              </Pressable>
-            )}
+            <View style={styles.topRight}>
+              <LangToggle />
+              {current && (
+                <Pressable hitSlop={12} onPress={() => router.push(`/tally/${current.id}`)}>
+                  <Text style={styles.link}>{t.history}</Text>
+                </Pressable>
+              )}
+            </View>
           </View>
 
           {current ? (
@@ -94,7 +99,7 @@ export default function HomeScreen() {
                 <Pressable
                   hitSlop={12}
                   onPress={() => router.push(`/edit/${current.id}`)}
-                  accessibilityLabel="Editar contador"
+                  accessibilityLabel={t.editCounter}
                   style={styles.nameRow}>
                   <Text style={styles.name} numberOfLines={1}>
                     {current.name}
@@ -106,8 +111,8 @@ export default function HomeScreen() {
                 </Animated.View>
                 <Text style={styles.meta}>
                   {first
-                    ? `HOY ${today}  ·  DESDE ${formatDate(first, now).toUpperCase()}`
-                    : 'SIN MARCAS'}
+                    ? t.todaySince(today, formatDate(first, now, lang).toUpperCase())
+                    : t.noMarks}
                 </Text>
               </View>
 
@@ -116,7 +121,7 @@ export default function HomeScreen() {
                   icon={current.icon}
                   size={BUTTON_SIZE}
                   onPress={onCount}
-                  accessibilityLabel={`Sumar uno a ${current.name}`}
+                  accessibilityLabel={t.addOneTo(current.name)}
                 />
                 {celebrations.map((c) => (
                   <MilestoneBurst
@@ -134,13 +139,13 @@ export default function HomeScreen() {
                 disabled={!last}
                 onPress={() => undo(current.id)}
                 style={{ opacity: last ? 1 : 0.3 }}>
-                <Text style={styles.link}>DESHACER</Text>
+                <Text style={styles.link}>{t.undo}</Text>
               </Pressable>
             </Animated.View>
           ) : (
             <View style={styles.center}>
-              <Text style={styles.emptyTitle}>NADA QUE CONTAR</Text>
-              <Text style={styles.meta}>CREA TU PRIMER CONTADOR ABAJO</Text>
+              <Text style={styles.emptyTitle}>{t.emptyTitle}</Text>
+              <Text style={styles.meta}>{t.emptyHint}</Text>
             </View>
           )}
 
@@ -161,8 +166,32 @@ export default function HomeScreen() {
   );
 }
 
+/** "EN · ES": el idioma activo en blanco, el otro en gris. */
+function LangToggle() {
+  const { lang, setLang } = useI18n();
+  return (
+    <View style={styles.langToggle}>
+      {(['en', 'es'] as const).map((code, i) => (
+        <View key={code} style={styles.langItem}>
+          {i > 0 && <Text style={styles.langSeparator}>·</Text>}
+          <Pressable
+            hitSlop={8}
+            onPress={() => setLang(code)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: lang === code }}>
+            <Text style={[styles.link, lang !== code && styles.langInactive]}>
+              {code.toUpperCase()}
+            </Text>
+          </Pressable>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function NewTallyInput({ onDone, canCancel }: { onDone: () => void; canCancel: boolean }) {
   const { addTally } = useTallies();
+  const { t } = useI18n();
   const [name, setName] = useState('');
 
   const submit = () => {
@@ -180,7 +209,7 @@ function NewTallyInput({ onDone, canCancel }: { onDone: () => void; canCancel: b
         onChangeText={setName}
         onSubmitEditing={submit}
         autoFocus={canCancel}
-        placeholder="NOMBRE DEL CONTADOR"
+        placeholder={t.counterNamePlaceholder}
         placeholderTextColor={C.textSecondary}
         returnKeyType="done"
         style={styles.input}
@@ -189,7 +218,7 @@ function NewTallyInput({ onDone, canCancel }: { onDone: () => void; canCancel: b
         onPress={submit}
         disabled={!name.trim()}
         style={{ opacity: name.trim() ? 1 : 0.3 }}>
-        <Text style={styles.link}>CREAR</Text>
+        <Text style={styles.link}>{t.create}</Text>
       </Pressable>
       {canCancel && (
         <Pressable onPress={onDone} hitSlop={8}>
@@ -211,6 +240,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingTop: Spacing.three,
   },
+  topRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.four },
+  langToggle: { flexDirection: 'row', alignItems: 'center' },
+  langItem: { flexDirection: 'row', alignItems: 'center' },
+  langSeparator: {
+    fontFamily: Type.mono,
+    fontSize: 12,
+    color: C.textSecondary,
+    marginHorizontal: Spacing.two,
+  },
+  langInactive: { color: C.textSecondary },
   brand: { fontFamily: Type.dot, fontSize: 20, color: C.text, letterSpacing: 2 },
   link: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
   center: {

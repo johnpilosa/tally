@@ -14,6 +14,7 @@ import Animated, {
 import { ChipDrag } from '@/animations/config';
 import { Colors, Spacing, Type } from '@/constants/theme';
 import { useMouseDragScroll } from '@/hooks/use-mouse-drag-scroll';
+import { useI18n } from '@/lib/i18n';
 import type { Tally } from '@/lib/tallies';
 
 const C = Colors.dark;
@@ -56,6 +57,7 @@ export function TallyChips({
     widths: useSharedValue<Record<string, number>>({}),
   };
   const ids = tallies.map((t) => t.id);
+  const { t: strings } = useI18n();
 
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const reordering = useRef(false);
@@ -99,7 +101,7 @@ export function TallyChips({
         />
       ))}
       <Pressable onPress={onAdd} style={styles.chip}>
-        <Text style={styles.text}>+ NUEVO</Text>
+        <Text style={styles.text}>{strings.newCounter}</Text>
       </Pressable>
     </ScrollView>
   );

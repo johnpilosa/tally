@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useNow } from '@/hooks/use-now';
+import { useI18n } from '@/lib/i18n';
 import { useTallies } from '@/lib/tallies';
 import { countSince, formatAgo, formatClock, groupByDay, todayStart } from '@/lib/time';
 
@@ -14,6 +15,7 @@ export default function TallyScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { tallies, loaded, removeTally } = useTallies();
   const now = useNow();
+  const { t, lang } = useI18n();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const tally = tallies.find((t) => t.id === id);
@@ -21,17 +23,17 @@ export default function TallyScreen() {
   if (!tally) {
     return (
       <View style={styles.missing}>
-        {loaded && <Text style={styles.meta}>ESTE CONTADOR NO EXISTE</Text>}
+        {loaded && <Text style={styles.meta}>{t.counterMissing}</Text>}
       </View>
     );
   }
 
   const last = tally.events.at(-1);
-  const groups = groupByDay(tally.events, now);
+  const groups = groupByDay(tally.events, now, lang);
   const stats = [
-    { label: 'HOY', value: countSince(tally.events, todayStart(now)) },
-    { label: '7 DÍAS', value: countSince(tally.events, now - WEEK) },
-    { label: 'TOTAL', value: tally.events.length },
+    { label: t.statToday, value: countSince(tally.events, todayStart(now)) },
+    { label: t.statWeek, value: countSince(tally.events, now - WEEK) },
+    { label: t.statTotal, value: tally.events.length },
   ];
 
   const onDelete = () => {
@@ -43,13 +45,13 @@ export default function TallyScreen() {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: 'HISTORIAL' }} />
+      <Stack.Screen options={{ title: t.historyTitle }} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <Text style={styles.name}>{tally.name}</Text>
           <Text style={styles.bigCount}>{tally.events.length}</Text>
           <Text style={styles.meta}>
-            {last ? `ÚLTIMA VEZ ${formatAgo(last, now).toUpperCase()}` : 'TODAVÍA SIN MARCAS'}
+            {last ? t.lastTime(formatAgo(last, now, lang).toUpperCase()) : t.stillNoMarks}
           </Text>
         </View>
 
@@ -81,7 +83,7 @@ export default function TallyScreen() {
 
         <Pressable onPress={onDelete} onBlur={() => setConfirmDelete(false)} style={styles.delete}>
           <Text style={[styles.link, { color: C.accent }]}>
-            {confirmDelete ? '¿SEGURO? TOCA OTRA VEZ' : 'ELIMINAR CONTADOR'}
+            {confirmDelete ? t.confirmAgain : t.deleteCounter}
           </Text>
         </Pressable>
       </ScrollView>

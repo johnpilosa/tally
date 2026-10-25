@@ -1,11 +1,12 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { CounterButton } from '@/components/counter-button';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
-import { customIconId, customIconRef, IconIds, Icons, type IconRef } from '@/icons';
+import { customIconId, customIconRef, IconIds, type IconRef } from '@/icons';
 import { useCustomIcons } from '@/lib/custom-icons';
+import { useI18n } from '@/lib/i18n';
 import { useTallies, type Tally } from '@/lib/tallies';
 
 const C = Colors.dark;
@@ -14,14 +15,15 @@ const C = Colors.dark;
 export default function EditTallyScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { tallies, loaded } = useTallies();
-  const tally = tallies.find((t) => t.id === id);
+  const { t } = useI18n();
+  const tally = tallies.find((x) => x.id === id);
 
   // El formulario se arma recién cuando el contador está cargado, para que arranque con sus datos
   // (si se abre esta pantalla directo, los contadores todavía se están leyendo del almacenamiento).
   if (!tally) {
     return (
       <View style={styles.missing}>
-        {loaded && <Text style={styles.label}>ESTE CONTADOR NO EXISTE</Text>}
+        {loaded && <Text style={styles.label}>{t.counterMissing}</Text>}
       </View>
     );
   }
@@ -30,6 +32,7 @@ export default function EditTallyScreen() {
 
 function EditTallyForm({ tally }: { tally: Tally }) {
   const { updateTally } = useTallies();
+  const { t } = useI18n();
   const [name, setName] = useState(tally.name);
   const [icon, setIcon] = useState<IconRef>(tally.icon ?? 'car');
   const { icons: customIcons, lastCreatedId } = useCustomIcons();
@@ -48,7 +51,7 @@ function EditTallyForm({ tally }: { tally: Tally }) {
     chosenCustomId && !customIcons.some((c) => c.id === chosenCustomId) ? 'car' : icon;
 
   const choices: { ref: IconRef; label: string }[] = [
-    ...IconIds.map((iconId) => ({ ref: iconId, label: Icons[iconId].label })),
+    ...IconIds.map((iconId) => ({ ref: iconId as IconRef, label: t.icons[iconId] })),
     ...customIcons.map((c) => ({ ref: customIconRef(c.id), label: c.name.toUpperCase() })),
   ];
 
@@ -62,19 +65,20 @@ function EditTallyForm({ tally }: { tally: Tally }) {
 
   return (
     <View style={styles.screen}>
+      <Stack.Screen options={{ title: t.editTitle }} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.label}>NOMBRE</Text>
+        <Text style={styles.label}>{t.name}</Text>
         <TextInput
           value={name}
           onChangeText={setName}
           onSubmitEditing={save}
-          placeholder="NOMBRE DEL CONTADOR"
+          placeholder={t.counterNamePlaceholder}
           placeholderTextColor={C.textSecondary}
           returnKeyType="done"
           style={styles.input}
         />
 
-        <Text style={[styles.label, styles.sectionGap]}>ÍCONO · TÓCALOS PARA PROBARLOS</Text>
+        <Text style={[styles.label, styles.sectionGap]}>{t.iconTryThem}</Text>
         <View style={styles.grid}>
           {choices.map(({ ref, label }) => {
             const selected = ref === chosen;
@@ -86,7 +90,7 @@ function EditTallyForm({ tally }: { tally: Tally }) {
                     icon={ref}
                     size={128}
                     onPress={() => setIcon(ref)}
-                    accessibilityLabel={`Elegir ícono ${label}`}
+                    accessibilityLabel={t.chooseIcon(label)}
                   />
                 </View>
                 <View style={styles.tileLabelRow}>
@@ -97,7 +101,7 @@ function EditTallyForm({ tally }: { tally: Tally }) {
                   {customId && (
                     <Pressable
                       hitSlop={10}
-                      accessibilityLabel={`Editar ícono ${label}`}
+                      accessibilityLabel={t.editIcon(label)}
                       onPress={() => router.push(`/icon-editor/${customId}`)}>
                       <Text style={styles.tileLabel}>✎</Text>
                     </Pressable>
@@ -109,11 +113,11 @@ function EditTallyForm({ tally }: { tally: Tally }) {
           <View style={styles.tile}>
             <Pressable
               onPress={() => router.push('/icon-editor/new')}
-              accessibilityLabel="Crear ícono"
+              accessibilityLabel={t.createIconA11y}
               style={({ pressed }) => [styles.newTile, pressed && { opacity: 0.6 }]}>
               <Text style={styles.newTilePlus}>+</Text>
             </Pressable>
-            <Text style={styles.tileLabel}>CREAR ÍCONO</Text>
+            <Text style={styles.tileLabel}>{t.createIcon}</Text>
           </View>
         </View>
 
@@ -124,7 +128,7 @@ function EditTallyForm({ tally }: { tally: Tally }) {
             styles.saveButton,
             { opacity: !canSave ? 0.3 : pressed ? 0.6 : 1 },
           ]}>
-          <Text style={styles.saveText}>GUARDAR</Text>
+          <Text style={styles.saveText}>{t.save}</Text>
         </Pressable>
       </ScrollView>
     </View>

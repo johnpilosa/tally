@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Colors, Type } from '@/constants/theme';
 import { CustomIconsProvider } from '@/lib/custom-icons';
+import { I18nProvider } from '@/lib/i18n';
 import { TallyProvider } from '@/lib/tallies';
 
 SplashScreen.preventAutoHideAsync();
@@ -34,22 +35,24 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={theme}>
-        <CustomIconsProvider>
-          <TallyProvider>
-            <Stack
-              screenOptions={{
-                headerShadowVisible: false,
-                headerTintColor: Colors.dark.text,
-                headerTitleStyle: { fontFamily: Type.mono, fontSize: 14 },
-                contentStyle: { backgroundColor: Colors.dark.background },
-              }}>
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="tally/[id]" options={{ title: '' }} />
-              <Stack.Screen name="edit/[id]" options={{ title: 'EDITAR', presentation: 'modal' }} />
-              <Stack.Screen name="icon-editor/[id]" options={{ title: 'EDITOR DE ÍCONO', presentation: 'modal' }} />
-            </Stack>
-          </TallyProvider>
-        </CustomIconsProvider>
+        <I18nProvider>
+          <CustomIconsProvider>
+            <TallyProvider>
+              <Stack
+                screenOptions={{
+                  headerShadowVisible: false,
+                  headerTintColor: Colors.dark.text,
+                  headerTitleStyle: { fontFamily: Type.mono, fontSize: 14 },
+                  contentStyle: { backgroundColor: Colors.dark.background },
+                }}>
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="tally/[id]" options={{ title: '' }} />
+                <Stack.Screen name="edit/[id]" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="icon-editor/[id]" options={{ presentation: 'modal' }} />
+              </Stack>
+            </TallyProvider>
+          </CustomIconsProvider>
+        </I18nProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

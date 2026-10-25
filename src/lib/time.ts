@@ -1,3 +1,5 @@
+import { Translations, type Lang } from '@/lib/i18n';
+
 const pad = (n: number) => String(n).padStart(2, '0');
 
 export function formatClock(ts: number) {
@@ -12,33 +14,38 @@ function startOfDay(ts: number) {
 }
 
 const DAY = 24 * 60 * 60 * 1000;
-const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
-/** "Hoy", "Ayer" o "12 oct". */
-export function formatDay(ts: number, now = Date.now()) {
-  const diffDays = Math.round((startOfDay(now) - startOfDay(ts)) / DAY);
-  if (diffDays === 0) return 'Hoy';
-  if (diffDays === 1) return 'Ayer';
-  const d = new Date(ts);
-  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+/** Cuántos días calendario pasaron entre `ts` y `now` (0 = hoy, 1 = ayer). */
+function daysAgo(ts: number, now: number) {
+  return Math.round((startOfDay(now) - startOfDay(ts)) / DAY);
 }
 
 /** "25 oct", o "25 oct 2025" si no es de este año. */
-export function formatDate(ts: number, now = Date.now()) {
+export function formatDate(ts: number, now = Date.now(), lang: Lang = 'en') {
   const d = new Date(ts);
-  const date = `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  const date = `${d.getDate()} ${Translations[lang].months[d.getMonth()]}`;
   return d.getFullYear() === new Date(now).getFullYear() ? date : `${date} ${d.getFullYear()}`;
 }
 
+/** "Hoy", "Ayer" o "12 oct". */
+export function formatDay(ts: number, now = Date.now(), lang: Lang = 'en') {
+  const t = Translations[lang];
+  const days = daysAgo(ts, now);
+  if (days === 0) return t.today;
+  if (days === 1) return t.yesterday;
+  return formatDate(ts, now, lang);
+}
+
 /** "recién", "hace 5 min", "hace 3 h", "ayer 14:30", "12 oct". */
-export function formatAgo(ts: number, now = Date.now()) {
+export function formatAgo(ts: number, now = Date.now(), lang: Lang = 'en') {
+  const t = Translations[lang];
   const mins = Math.floor((now - ts) / 60000);
-  if (mins < 1) return 'recién';
-  if (mins < 60) return `hace ${mins} min`;
-  const day = formatDay(ts, now);
-  if (day === 'Hoy') return `hace ${Math.floor(mins / 60)} h`;
-  if (day === 'Ayer') return `ayer ${formatClock(ts)}`;
-  return day;
+  if (mins < 1) return t.justNow;
+  if (mins < 60) return t.minutesAgo(mins);
+  const days = daysAgo(ts, now);
+  if (days === 0) return t.hoursAgo(Math.floor(mins / 60));
+  if (days === 1) return t.yesterdayAt(formatClock(ts));
+  return formatDate(ts, now, lang);
 }
 
 export function countSince(events: number[], since: number) {
@@ -50,10 +57,10 @@ export function todayStart(now = Date.now()) {
 }
 
 /** Agrupa timestamps por día, del más reciente al más viejo. */
-export function groupByDay(events: number[], now = Date.now()) {
+export function groupByDay(events: number[], now = Date.now(), lang: Lang = 'en') {
   const groups: { label: string; items: number[] }[] = [];
   for (const ts of [...events].reverse()) {
-    const label = formatDay(ts, now);
+    const label = formatDay(ts, now, lang);
     const last = groups[groups.length - 1];
     if (last?.label === label) last.items.push(ts);
     else groups.push({ label, items: [ts] });

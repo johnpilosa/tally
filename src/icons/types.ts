@@ -8,8 +8,6 @@ export type IconProps = {
 };
 
 export type IconDef = {
-  /** Nombre corto que se muestra en el editor. */
-  label: string;
   Component: ComponentType<IconProps>;
 };
 

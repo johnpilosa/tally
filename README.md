@@ -29,7 +29,7 @@ It remembers what you counted last and puts it front and center, so the whole fl
 | **ROUNDABOUT** | A tiny car laps a top-down roundabout. Tap faster, it keeps going. |
 | **#$%&!** | Comic-strip swear symbols jump in a wave, tilt, land and the whole thing shakes. |
 | **NERD** | Pushes his glasses up, blinks, tilts his head. Insufferable. |
-| **DESTRUCTOR** | Splits clean down the middle with a red flash, floats there, snaps back together. |
+| **DESTROYER** | Splits clean down the middle with a red flash, floats there, snaps back together. |
 
 ### ● &nbsp;MILESTONES
 
@@ -55,7 +55,7 @@ You don't need this. You will want it anyway.
 
 Don't like the built-ins? Build one. Drop in circles, squares, triangles, stars and lines, drag them around the canvas, and give each one a move: **spin, pulse, float, blink, orbit, shake or bounce**. Set the speed, stagger them with a delay, and they all fire on every tap.
 
-Also in the box: **history** (today / 7 days / total, every tap by day), **rename**, **undo**, and **long-press to drag** your counters into order.
+Also in the box: **history** (today / 7 days / total, every tap by day), **rename**, **undo**, **long-press to drag** your counters into order, and an **EN · ES** switch up top.
 
 ### ● &nbsp;RUN IT
 
