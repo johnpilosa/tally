@@ -77,8 +77,15 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 /** Editor de íconos propios: formas que se arrastran en el lienzo, cada una con su movimiento. */
 export default function IconEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { icons, saveIcon, deleteIcon } = useCustomIcons();
+  const { icons, loaded } = useCustomIcons();
+  // Se espera a que carguen los íconos guardados, para que al editar uno arranque con sus formas.
+  if (!loaded) return <View style={styles.screen} />;
   const existing = icons.find((i) => i.id === id);
+  return <IconEditor key={id} existing={existing} />;
+}
+
+function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
+  const { saveIcon, deleteIcon } = useCustomIcons();
 
   const [draft, setDraft] = useState<CustomIcon>(
     () => existing ?? { id: newShapeId(), name: '', shapes: [newShape('circle')] },

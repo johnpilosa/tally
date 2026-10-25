@@ -42,6 +42,7 @@ const STORAGE_KEY = 'customIcons:v1';
 
 type CustomIconsStore = {
   icons: CustomIcon[];
+  loaded: boolean;
   saveIcon: (icon: CustomIcon) => void;
   deleteIcon: (id: string) => void;
   /** El último ícono creado, para que el editor de contadores lo deje elegido al volver. */
@@ -73,6 +74,7 @@ export function CustomIconsProvider({ children }: { children: ReactNode }) {
 
   const store: CustomIconsStore = {
     icons,
+    loaded,
     lastCreatedId,
     saveIcon: (icon) => {
       const exists = icons.some((i) => i.id === icon.id);

@@ -6,18 +6,32 @@ import { CounterButton } from '@/components/counter-button';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { customIconId, customIconRef, IconIds, Icons, type IconRef } from '@/icons';
 import { useCustomIcons } from '@/lib/custom-icons';
-import { useTallies } from '@/lib/tallies';
+import { useTallies, type Tally } from '@/lib/tallies';
 
 const C = Colors.dark;
 
 /** Editor de un contador: cambiar el nombre y elegir el ícono animado. */
 export default function EditTallyScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { tallies, updateTally } = useTallies();
+  const { tallies, loaded } = useTallies();
   const tally = tallies.find((t) => t.id === id);
 
-  const [name, setName] = useState(tally?.name ?? '');
-  const [icon, setIcon] = useState<IconRef>(tally?.icon ?? 'car');
+  // El formulario se arma recién cuando el contador está cargado, para que arranque con sus datos
+  // (si se abre esta pantalla directo, los contadores todavía se están leyendo del almacenamiento).
+  if (!tally) {
+    return (
+      <View style={styles.missing}>
+        {loaded && <Text style={styles.label}>ESTE CONTADOR NO EXISTE</Text>}
+      </View>
+    );
+  }
+  return <EditTallyForm key={tally.id} tally={tally} />;
+}
+
+function EditTallyForm({ tally }: { tally: Tally }) {
+  const { updateTally } = useTallies();
+  const [name, setName] = useState(tally.name);
+  const [icon, setIcon] = useState<IconRef>(tally.icon ?? 'car');
   const { icons: customIcons, lastCreatedId } = useCustomIcons();
 
   // Al volver de crear un ícono nuevo, queda elegido.
@@ -37,14 +51,6 @@ export default function EditTallyScreen() {
     ...IconIds.map((iconId) => ({ ref: iconId, label: Icons[iconId].label })),
     ...customIcons.map((c) => ({ ref: customIconRef(c.id), label: c.name.toUpperCase() })),
   ];
-
-  if (!tally) {
-    return (
-      <View style={styles.missing}>
-        <Text style={styles.label}>ESTE CONTADOR NO EXISTE</Text>
-      </View>
-    );
-  }
 
   const canSave = name.trim().length > 0;
 
