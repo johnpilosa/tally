@@ -10,12 +10,20 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { SwitchTally } from '@/animations/config';
+import { Milestone, SwitchTally } from '@/animations/config';
 import { AnimatedCount } from '@/components/animated-count';
 import { CounterButton } from '@/components/counter-button';
+import { MilestoneBurst } from '@/components/milestone-burst';
 import { TallyChips } from '@/components/tally-chips';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useNow } from '@/hooks/use-now';
@@ -23,11 +31,17 @@ import { useTallies } from '@/lib/tallies';
 import { countSince, formatDate, todayStart } from '@/lib/time';
 
 const C = Colors.dark;
+const BUTTON_SIZE = 240;
+
+type Celebration = { key: number; value: number; big: boolean };
 
 export default function HomeScreen() {
   const { tallies, loaded, current, increment, undo, select, moveTally } = useTallies();
   const now = useNow();
   const [adding, setAdding] = useState(false);
+  const [celebrations, setCelebrations] = useState<Celebration[]>([]);
+  const countScale = useSharedValue(1);
+  const countPopStyle = useAnimatedStyle(() => ({ transform: [{ scale: countScale.get() }] }));
 
   if (!loaded) return <View style={styles.screen} />;
 
@@ -38,7 +52,22 @@ export default function HomeScreen() {
   const onCount = () => {
     if (!current) return;
     increment(current.id);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const value = current.events.length + 1;
+    if (value % Milestone.every !== 0) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      return;
+    }
+    // ¡Milestone!
+    const big = value % Milestone.bigEvery === 0;
+    setCelebrations((c) => [...c, { key: Date.now() + Math.random(), value, big }]);
+    countScale.set(
+      withSequence(
+        withTiming(Milestone.countPop, { duration: 120 }),
+        withSpring(1, Milestone.countSpring),
+      ),
+    );
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   return (
@@ -72,7 +101,9 @@ export default function HomeScreen() {
                   </Text>
                   <Text style={styles.editHint}>✎</Text>
                 </Pressable>
-                <AnimatedCount value={current.events.length} style={styles.count} />
+                <Animated.View style={countPopStyle}>
+                  <AnimatedCount value={current.events.length} style={styles.count} />
+                </Animated.View>
                 <Text style={styles.meta}>
                   {first
                     ? `HOY ${today}  ·  DESDE ${formatDate(first, now).toUpperCase()}`
@@ -80,11 +111,23 @@ export default function HomeScreen() {
                 </Text>
               </View>
 
-              <CounterButton
-                icon={current.icon}
-                onPress={onCount}
-                accessibilityLabel={`Sumar uno a ${current.name}`}
-              />
+              <View>
+                <CounterButton
+                  icon={current.icon}
+                  size={BUTTON_SIZE}
+                  onPress={onCount}
+                  accessibilityLabel={`Sumar uno a ${current.name}`}
+                />
+                {celebrations.map((c) => (
+                  <MilestoneBurst
+                    key={c.key}
+                    value={c.value}
+                    big={c.big}
+                    size={BUTTON_SIZE}
+                    onDone={() => setCelebrations((all) => all.filter((x) => x.key !== c.key))}
+                  />
+                ))}
+              </View>
 
               <Pressable
                 hitSlop={12}

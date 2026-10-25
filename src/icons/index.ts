@@ -22,3 +22,18 @@ export const Icons = {
 export type IconId = keyof typeof Icons;
 
 export const IconIds = Object.keys(Icons) as IconId[];
+
+/**
+ * Lo que se guarda en un contador: el id de un ícono de esta lista, o `custom:<id>` para uno
+ * hecho en el editor de íconos.
+ */
+export type IconRef = IconId | `custom:${string}`;
+
+export function customIconRef(id: string): IconRef {
+  return `custom:${id}`;
+}
+
+/** Si `ref` es de un ícono propio, devuelve su id; si no, null. */
+export function customIconId(ref: IconRef | undefined): string | null {
+  return ref?.startsWith('custom:') ? ref.slice('custom:'.length) : null;
+}

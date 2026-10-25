@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Colors, Type } from '@/constants/theme';
+import { CustomIconsProvider } from '@/lib/custom-icons';
 import { TallyProvider } from '@/lib/tallies';
 
 SplashScreen.preventAutoHideAsync();
@@ -33,19 +34,22 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={theme}>
-        <TallyProvider>
-          <Stack
-            screenOptions={{
-              headerShadowVisible: false,
-              headerTintColor: Colors.dark.text,
-              headerTitleStyle: { fontFamily: Type.mono, fontSize: 14 },
-              contentStyle: { backgroundColor: Colors.dark.background },
-            }}>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="tally/[id]" options={{ title: '' }} />
-            <Stack.Screen name="edit/[id]" options={{ title: 'EDITAR', presentation: 'modal' }} />
-          </Stack>
-        </TallyProvider>
+        <CustomIconsProvider>
+          <TallyProvider>
+            <Stack
+              screenOptions={{
+                headerShadowVisible: false,
+                headerTintColor: Colors.dark.text,
+                headerTitleStyle: { fontFamily: Type.mono, fontSize: 14 },
+                contentStyle: { backgroundColor: Colors.dark.background },
+              }}>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="tally/[id]" options={{ title: '' }} />
+              <Stack.Screen name="edit/[id]" options={{ title: 'EDITAR', presentation: 'modal' }} />
+              <Stack.Screen name="icon-editor/[id]" options={{ title: 'EDITOR DE ÍCONO', presentation: 'modal' }} />
+            </Stack>
+          </TallyProvider>
+        </CustomIconsProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

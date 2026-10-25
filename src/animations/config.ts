@@ -125,3 +125,51 @@ export const ChipDrag = {
   /** Cuánto tardan los demás en correrse para hacerle espacio. */
   shiftDuration: 150,
 };
+
+/* ─────────────────────────── MILESTONES ─────────────────────────── */
+
+/**
+ * El festejo al llegar a un múltiplo de `every` (5, 10, 15…): una explosión de pixeles desde
+ * el botón, el número da un salto y aparece el letrero. Cada `bigEvery` (25, 50…) es más grande.
+ */
+export const Milestone = {
+  every: 5,
+  bigEvery: 25,
+  /** Cuántos pixeles salen disparados en uno normal y en uno grande. */
+  particles: 14,
+  bigParticles: 28,
+  /** Hasta dónde vuelan, en puntos, desde el borde del botón. */
+  distance: 60,
+  bigDistance: 110,
+  /** Tamaño de cada pixel. */
+  pixelSize: 6,
+  /** Cada cuántos pixeles va uno rojo (4 = uno de cada cuatro). */
+  redEvery: 4,
+  duration: 850,
+  easing: Easing.out(Easing.cubic),
+  /** El salto del número: cuánto crece y cómo vuelve. */
+  countPop: 1.3,
+  countSpring: { damping: 7, stiffness: 220 },
+  /** El letrero que aparece bajo el botón. `{n}` se reemplaza por el número. */
+  label: '{n} · MILESTONE',
+  bigLabel: '{n} · MEGA MILESTONE',
+  labelDuration: 1400,
+};
+
+/* ─────────────────────────── ÍCONOS PROPIOS ─────────────────────────── */
+
+/**
+ * Los movimientos que se le pueden poner a cada forma en el editor de íconos.
+ * Cada toque del botón reproduce el movimiento una vez. `duration` es a velocidad 1x
+ * (a 2x dura la mitad). Las distancias están en puntos del lienzo (que mide 100 × 100).
+ */
+export const CustomMotion = {
+  spin: { duration: 700, turns: 1 },
+  pulse: { duration: 450, grow: 0.4 },
+  float: { duration: 700, height: 12 },
+  blink: { duration: 400 },
+  orbit: { duration: 900, radius: 10 },
+  shake: { duration: 450, distance: 6, times: 3 },
+  bounce: { duration: 550, height: 18 },
+  easing: Easing.inOut(Easing.quad),
+};

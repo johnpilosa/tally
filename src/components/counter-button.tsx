@@ -5,7 +5,9 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-na
 import { RingPulse } from '@/animations/config';
 import { BouncePressable } from '@/components/bounce-pressable';
 import { Colors } from '@/constants/theme';
-import { Icons, type IconId } from '@/icons';
+import { customIconId, Icons, type IconId, type IconRef } from '@/icons';
+import { CustomIconView } from '@/icons/custom';
+import { useCustomIcons } from '@/lib/custom-icons';
 
 /**
  * El botón principal: un círculo blanco delgado con un ícono animado adentro.
@@ -17,14 +19,18 @@ export function CounterButton({
   size = 240,
   accessibilityLabel,
 }: {
-  icon?: IconId;
+  icon?: IconRef;
   onPress: () => void;
   size?: number;
   accessibilityLabel?: string;
 }) {
   const [trigger, setTrigger] = useState(0);
   const [pulses, setPulses] = useState<number[]>([]);
-  const Icon = (Icons[icon] ?? Icons.car).Component;
+  const { icons: customIcons } = useCustomIcons();
+  const customId = customIconId(icon);
+  const custom = customId ? customIcons.find((i) => i.id === customId) : undefined;
+  // Si el ícono no existe (por ejemplo, se borró un ícono propio), se usa el auto.
+  const Icon = (Icons[icon as IconId] ?? Icons.car).Component;
 
   const handlePress = () => {
     setTrigger((t) => t + 1);
@@ -46,7 +52,11 @@ export function CounterButton({
         style={[styles.circle, { width: size, height: size, borderRadius: size / 2 }]}>
         <View style={[styles.iconBox, { width: inner, height: inner }]}>
           {/* `key` hace que al cambiar de ícono se monte uno nuevo, sin arrastrar animaciones. */}
-          <Icon key={icon} trigger={trigger} size={inner} />
+          {custom ? (
+            <CustomIconView key={icon} icon={custom} trigger={trigger} size={inner} />
+          ) : (
+            <Icon key={icon} trigger={trigger} size={inner} />
+          )}
         </View>
       </BouncePressable>
     </View>

@@ -1,14 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-import type { IconId } from '@/icons';
+import type { IconRef } from '@/icons';
 
 export type Tally = {
   id: string;
   name: string;
   color: string;
   /** El ícono animado del botón. Los contadores viejos no lo tienen y usan el auto. */
-  icon?: IconId;
+  icon?: IconRef;
   /** Timestamps (ms) de cada vez que se marcó, del más viejo al más nuevo. */
   events: number[];
 };
