@@ -65,3 +65,48 @@ export async function fetchGame(key: string, signal?: AbortSignal): Promise<Game
 export function yearOf(description: string) {
   return description.match(/\b(19|20)\d{2}\b/)?.[0] ?? null;
 }
+
+export type Screenshot = { url: string; caption: string };
+
+/** Palabras en el nombre del archivo que indican que no es una captura del juego. */
+const NOT_A_SCREENSHOT =
+  /cover|box|logo|poster|console|controller|e3|portrait|photo|signature|\.svg/i;
+
+/**
+ * Capturas del juego que aparecen en su artículo. Se descarta la portada y las fotos que no
+ * son del juego (consolas, personas, logos); se quedan las que tienen "screenshot" o "gameplay"
+ * en el nombre, o el nombre del juego.
+ */
+export async function fetchScreenshots(key: string, signal?: AbortSignal): Promise<Screenshot[]> {
+  const res = await fetch(`${WIKI}/api/rest_v1/page/media-list/${encodeURIComponent(key)}`, {
+    signal,
+  });
+  if (!res.ok) return [];
+  const data: {
+    items: {
+      type: string;
+      title: string;
+      srcset?: { src: string; scale: string }[];
+      caption?: { text: string };
+    }[];
+  } = await res.json();
+  const gameWords = key
+    .split(/[_:()]+/)
+    .filter((w) => w.length > 3)
+    .map((w) => w.toLowerCase());
+  return data.items
+    .filter((it, i) => it.type === 'image' && i > 0 && it.srcset?.length)
+    .filter((it) => !NOT_A_SCREENSHOT.test(it.title))
+    .filter((it) => {
+      const name = it.title.toLowerCase();
+      return /screenshot|gameplay/.test(name) || gameWords.some((w) => name.includes(w));
+    })
+    .slice(0, 6)
+    .map((it) => {
+      const best = it.srcset![it.srcset!.length - 1].src;
+      return {
+        url: best.startsWith('//') ? `https:${best}` : best,
+        caption: it.caption?.text ?? '',
+      };
+    });
+}

@@ -53,10 +53,18 @@ export default function RootLayout() {
                     <Stack.Screen name="tally/[id]" options={{ title: '' }} />
                     <Stack.Screen name="edit/[id]" options={{ presentation: 'modal' }} />
                     <Stack.Screen name="icon-editor/[id]" options={{ presentation: 'modal' }} />
-                    <Stack.Screen name="games/index" options={{ headerShown: false }} />
+                    <Stack.Screen
+                      name="games/index"
+                      options={{ headerShown: false, animation: 'fade' }}
+                    />
                     <Stack.Screen name="games/search" options={{ title: '' }} />
                     <Stack.Screen name="games/game" options={{ title: '' }} />
                     <Stack.Screen name="games/review" options={{ title: '' }} />
+                    <Stack.Screen
+                      name="games/lists"
+                      options={{ headerShown: false, animation: 'fade' }}
+                    />
+                    <Stack.Screen name="games/list" options={{ title: '' }} />
                   </Stack>
                 </BlurHost>
               </GamesProvider>

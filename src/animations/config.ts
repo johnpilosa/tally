@@ -176,14 +176,27 @@ export const CustomMotion = {
 
 /* ─────────────────────────── VENTANAS Y MENÚS ─────────────────────────── */
 
-/** Menús y popups que desenfocan el fondo (el menú de apps, "agregado a la lista", etc.). */
+/**
+ * Menús y popups que desenfocan el fondo (el menú de apps, "agregado a la lista", etc.).
+ * Están pensados para sentirse suaves y "flotando": entran lento, subiendo un poco y creciendo
+ * apenas, y salen más rápido.
+ */
 export const Overlay = {
   /** Qué tan fuerte se desenfoca el fondo (1 a 100). */
   blur: 40,
   /** Capa oscura encima del desenfoque, para que lo de adelante resalte. */
   dim: 'rgba(0, 0, 0, 0.45)',
-  fadeIn: 180,
-  fadeOut: 140,
-  /** Cómo entra el contenido (menú o popup). */
-  enter: { damping: 18, stiffness: 260 },
+  /** Cuánto tarda en aparecer y desaparecer el fondo desenfocado. */
+  fadeIn: 380,
+  fadeOut: 260,
+  /** Cómo entra el contenido (menú, popup, dropdown). */
+  enter: {
+    duration: 520,
+    /** Desde cuántos puntos más abajo sube (negativo = baja desde arriba). */
+    rise: 18,
+    /** Desde qué tamaño crece (1 = sin crecer). */
+    fromScale: 0.96,
+    /** Retraso entre un elemento y el siguiente en una lista (efecto cascada). */
+    stagger: 45,
+  },
 };

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 
+import { GamesMenuButton } from '@/components/games-nav';
 import { StarRating } from '@/components/star-rating';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { newId, RatingCategories, useGames, type Game } from '@/lib/games';
@@ -57,7 +58,9 @@ function Review({ game }: { game: Game }) {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: t.games.reviewTitle }} />
+      <Stack.Screen
+        options={{ title: t.games.reviewTitle, headerRight: () => <GamesMenuButton /> }}
+      />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {/* Encabezado: portada, título, estado y favorito */}
         <Animated.View entering={FadeInDown.duration(250)} style={styles.header}>

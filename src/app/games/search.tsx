@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
+import { GamesMenuButton } from '@/components/games-nav';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useGames } from '@/lib/games';
 import { useI18n } from '@/lib/i18n';
@@ -49,7 +50,7 @@ export default function SearchGameScreen() {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: t.games.addGame }} />
+      <Stack.Screen options={{ title: t.games.addGame, headerRight: () => <GamesMenuButton /> }} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <TextInput
           value={query}

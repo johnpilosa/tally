@@ -2,13 +2,14 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated, { FadeInDown, LinearTransition, ZoomIn } from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Overlay } from '@/animations/config';
+import { floatIn } from '@/animations/presets';
 import { AppSwitcher } from '@/components/app-switcher';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { BouncePressable } from '@/components/bounce-pressable';
+import { GamesTabBar } from '@/components/games-nav';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useGames, type Game } from '@/lib/games';
 import { useI18n } from '@/lib/i18n';
@@ -16,21 +17,19 @@ import { yearOf } from '@/lib/wiki-games';
 
 const C = Colors.dark;
 
-/** "all", "playing", "played", "favorites" o el id de una lista. */
-type Filter = string;
+type Filter = 'all' | 'playing' | 'played' | 'favorites';
 
 /** Mis juegos: la lista, con filtros por estado, favoritos y listas propias. */
 export default function MyGamesScreen() {
   const { t } = useI18n();
-  const { games, lists, loaded, updateGame } = useGames();
+  const { games, loaded, updateGame } = useGames();
   const [filter, setFilter] = useState<Filter>('all');
   const [listsFor, setListsFor] = useState<string | null>(null);
 
   const shown = games.filter((g) => {
     if (filter === 'all') return true;
     if (filter === 'playing' || filter === 'played') return g.status === filter;
-    if (filter === 'favorites') return g.favorite;
-    return g.listIds.includes(filter);
+    return g.favorite;
   });
 
   const filters: { id: Filter; label: string }[] = [
@@ -38,12 +37,11 @@ export default function MyGamesScreen() {
     { id: 'playing', label: t.games.playing },
     { id: 'played', label: t.games.played },
     { id: 'favorites', label: t.games.favorites },
-    ...lists.map((l) => ({ id: l.id, label: l.name.toUpperCase() })),
   ];
 
   return (
     <View style={styles.screen}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.topBar}>
           <AppSwitcher current="games" />
           <Pressable hitSlop={12} onPress={() => router.push('/games/search')}>
@@ -97,6 +95,7 @@ export default function MyGamesScreen() {
           </>
         )}
       </SafeAreaView>
+      <GamesTabBar current="games" />
 
       <ListPicker gameId={listsFor} onClose={() => setListsFor(null)} />
     </View>
@@ -126,7 +125,7 @@ function GameRow({
 
   return (
     <Animated.View
-      entering={FadeInDown.delay(Math.min(index, 8) * 40).duration(220)}
+      entering={floatIn({ index: Math.min(index, 8) })}
       layout={LinearTransition}
       style={styles.row}>
       <Pressable
@@ -179,11 +178,7 @@ function ListPicker({ gameId, onClose }: { gameId: string | null; onClose: () =>
   return (
     <BlurOverlay visible={!!game} onClose={onClose}>
       <View style={[styles.popupWrap, { paddingTop: insets.top }]} pointerEvents="box-none">
-        <Animated.View
-          entering={ZoomIn.springify()
-            .damping(Overlay.enter.damping)
-            .stiffness(Overlay.enter.stiffness)}
-          style={styles.popup}>
+        <Animated.View entering={floatIn()} style={styles.popup}>
           <Text style={styles.label}>{t.games.addToList}</Text>
           <Text style={styles.popupTitle} numberOfLines={2}>
             {game?.title.toUpperCase()}
@@ -257,8 +252,8 @@ function NewListForm({ onCreate }: { onCreate: (name: string) => void }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.background, alignItems: 'center' },
-  safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth },
+  screen: { flex: 1, backgroundColor: C.background },
+  safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -345,7 +340,7 @@ const styles = StyleSheet.create({
     maxWidth: 380,
     borderWidth: 1,
     borderColor: C.border,
-    borderRadius: Spacing.four,
+    borderRadius: 28,
     backgroundColor: C.background,
     padding: Spacing.four,
     gap: Spacing.three,

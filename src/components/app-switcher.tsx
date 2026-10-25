@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Overlay } from '@/animations/config';
+import { floatIn } from '@/animations/presets';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Colors, Spacing, Type } from '@/constants/theme';
 import { useI18n } from '@/lib/i18n';
@@ -46,29 +46,26 @@ export function AppSwitcher({ current }: { current: AppId }) {
       </Pressable>
 
       <BlurOverlay visible={open} onClose={() => setOpen(false)}>
-        <Animated.View
-          entering={FadeInUp.springify()
-            .damping(Overlay.enter.damping)
-            .stiffness(Overlay.enter.stiffness)}
-          style={[styles.menu, { top: insets.top + Spacing.three + 40 }]}>
-          {APPS.map((app) => {
+        <View style={[styles.menu, { top: insets.top + Spacing.three + 40 }]}>
+          {APPS.map((app, i) => {
             const active = app.id === current;
             return (
-              <Pressable
-                key={app.id}
-                onPress={() => go(app.id, app.route)}
-                style={({ pressed }) => [styles.item, pressed && { opacity: 0.6 }]}>
-                <View style={styles.itemTitleRow}>
-                  {active && <View style={styles.dot} />}
-                  <Text style={[styles.itemName, !active && styles.itemNameInactive]}>
-                    {t.apps[app.id].name}
-                  </Text>
-                </View>
-                <Text style={styles.itemHint}>{t.apps[app.id].hint}</Text>
-              </Pressable>
+              <Animated.View key={app.id} entering={floatIn({ direction: -1, index: i })}>
+                <Pressable
+                  onPress={() => go(app.id, app.route)}
+                  style={({ pressed }) => [styles.item, pressed && { opacity: 0.6 }]}>
+                  <View style={styles.itemTitleRow}>
+                    {active && <View style={styles.dot} />}
+                    <Text style={[styles.itemName, !active && styles.itemNameInactive]}>
+                      {t.apps[app.id].name}
+                    </Text>
+                  </View>
+                  <Text style={styles.itemHint}>{t.apps[app.id].hint}</Text>
+                </Pressable>
+              </Animated.View>
             );
           })}
-        </Animated.View>
+        </View>
       </BlurOverlay>
     </>
   );

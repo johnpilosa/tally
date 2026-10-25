@@ -49,6 +49,9 @@ type GamesStore = Saved & {
   removeGame: (id: string) => void;
   createList: (name: string) => string;
   toggleInList: (gameId: string, listId: string) => void;
+  renameList: (id: string, name: string) => void;
+  /** Borra la lista. Los juegos no se borran: solo dejan de estar en ella. */
+  deleteList: (id: string) => void;
 };
 
 const GamesContext = createContext<GamesStore | null>(null);
@@ -122,6 +125,13 @@ export function GamesProvider({ children }: { children: ReactNode }) {
               },
         ),
       ),
+    renameList: (id, name) =>
+      setSaved((s) => ({ ...s, lists: s.lists.map((l) => (l.id === id ? { ...l, name } : l)) })),
+    deleteList: (id) =>
+      setSaved((s) => ({
+        lists: s.lists.filter((l) => l.id !== id),
+        games: s.games.map((g) => ({ ...g, listIds: g.listIds.filter((l) => l !== id) })),
+      })),
   };
 
   return <GamesContext.Provider value={store}>{children}</GamesContext.Provider>;
