@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Appear } from '@/animations/appear';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { BouncePressable } from '@/components/bounce-pressable';
+import { LapChip } from '@/components/lap-chip';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames, type Game } from '@/lib/games';
@@ -72,21 +73,19 @@ export default function MyGamesScreen() {
                 style={styles.filtersScroll}
                 contentContainerStyle={styles.filters}>
                 {filters.map((f) => (
-                  <Pressable
-                    key={f.id}
-                    onPress={() => setFilter(f.id)}
-                    style={[styles.chip, filter === f.id && styles.chipActive]}>
+                  <LapChip key={f.id} active={filter === f.id} onPress={() => setFilter(f.id)}>
                     {filter === f.id && <View style={styles.dot} />}
                     <Text style={[styles.chipText, filter === f.id && styles.chipTextActive]}>
                       {f.label}
                     </Text>
-                  </Pressable>
+                  </LapChip>
                 ))}
               </ScrollView>
             </Appear>
 
             <ScrollView contentContainerStyle={styles.list}>
-              <View key={focusKey} style={{ gap: Spacing.two }}>
+              {/* Cambiar de filtro o volver a la pantalla vuelve a animar la lista. */}
+              <View key={`${filter}-${focusKey}`} style={{ gap: Spacing.two }}>
                 {shown.length === 0 && <Text style={styles.label}>{t.games.emptyFilter}</Text>}
                 {shown.map((g, i) => (
                   <GameRow

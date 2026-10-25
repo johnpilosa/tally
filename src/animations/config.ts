@@ -218,3 +218,16 @@ export const TitleTyping = {
   /** Milisegundos por letra al borrar (un poco más rápido que escribir). */
   eraseMs: 16,
 };
+
+/* ─────────────────────────── FILTROS ─────────────────────────── */
+
+/**
+ * Los filtros de arriba (ALL, PLAYING, PLAYED, FAVORITES): al elegir uno, el contorno del
+ * anterior se va dando la vuelta y desaparece, y el del nuevo se dibuja dando la vuelta.
+ */
+export const ChipLap = {
+  /** Cuánto tarda en dar la vuelta, en milisegundos. */
+  duration: 340,
+  /** Grosor de la línea que da la vuelta. */
+  strokeWidth: 1.2,
+};
