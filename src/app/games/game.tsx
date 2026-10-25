@@ -1,13 +1,14 @@
 import { Image } from 'expo-image';
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { floatIn } from '@/animations/presets';
+import { popIn } from '@/animations/presets';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { GamesMenuButton } from '@/components/games-nav';
+import { ScreenHeader } from '@/components/screen-header';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useGames, type GameStatus } from '@/lib/games';
 import { useI18n } from '@/lib/i18n';
@@ -85,14 +86,14 @@ export default function GameScreen() {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: '', headerRight: () => <GamesMenuButton /> }} />
+      <ScreenHeader back="/games" right={<GamesMenuButton />} />
       {!game ? (
         <View style={styles.center}>
           <Text style={styles.label}>{failed ? t.games.offline : t.games.loading}</Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <Animated.View entering={floatIn()} style={styles.titleBlock}>
+          <Animated.View entering={popIn()} style={styles.titleBlock}>
             <Title title={game.title} width={content} />
             <View style={styles.metaRow}>
               {year && <Text style={styles.metaChip}>{year}</Text>}
@@ -101,7 +102,7 @@ export default function GameScreen() {
           </Animated.View>
 
           <Animated.View
-            entering={floatIn({ index: 2 })}
+            entering={popIn({ index: 2 })}
             style={[styles.boxes, { height: boxHeight }]}>
             <Pressable onPress={() => setSummaryOpen(true)} style={styles.summaryBox}>
               <Text style={styles.label}>{t.games.about}</Text>
@@ -121,7 +122,7 @@ export default function GameScreen() {
             <Cover url={game.coverUrl} width={coverWidth} />
           </Animated.View>
 
-          <Animated.View entering={floatIn({ index: 4 })} style={styles.actionsBlock}>
+          <Animated.View entering={popIn({ index: 4 })} style={styles.actionsBlock}>
             <View style={styles.actions}>
               <Pressable
                 onPress={add}
@@ -148,7 +149,7 @@ export default function GameScreen() {
                 {statusOpen && (
                   <View style={styles.statusMenu}>
                     {(['playing', 'played'] as const).map((s, i) => (
-                      <Animated.View key={s} entering={floatIn({ direction: -1, index: i })}>
+                      <Animated.View key={s} entering={popIn({ direction: -1, index: i })}>
                         <Pressable
                           onPress={() => pickStatus(s)}
                           style={({ pressed }) => [styles.statusItem, pressed && { opacity: 0.6 }]}>
@@ -171,7 +172,7 @@ export default function GameScreen() {
           </Animated.View>
 
           {shots.length > 0 && (
-            <Animated.View entering={floatIn({ index: 6 })} style={styles.shotsBlock}>
+            <Animated.View entering={popIn({ index: 6 })} style={styles.shotsBlock}>
               <Text style={styles.label}>{t.games.screenshots}</Text>
               <ScrollView
                 horizontal
@@ -197,7 +198,7 @@ export default function GameScreen() {
       {/* Popup: agregado a la lista */}
       <BlurOverlay visible={addedOpen} onClose={() => setAddedOpen(false)}>
         <View style={styles.popupWrap} pointerEvents="box-none">
-          <Animated.View entering={floatIn()} style={styles.popup}>
+          <Animated.View entering={popIn()} style={styles.popup}>
             <View style={styles.popupTitleRow}>
               <View style={styles.dot} />
               <Text style={styles.label}>{t.games.addedTitle}</Text>
@@ -226,7 +227,7 @@ export default function GameScreen() {
       {/* Resumen completo */}
       <BlurOverlay visible={summaryOpen} onClose={() => setSummaryOpen(false)}>
         <View style={styles.popupWrap} pointerEvents="box-none">
-          <Animated.View entering={floatIn()} style={[styles.popup, styles.summaryPopup]}>
+          <Animated.View entering={popIn()} style={[styles.popup, styles.summaryPopup]}>
             <Text style={styles.label}>{t.games.about}</Text>
             <ScrollView>
               <Text style={styles.summaryFull}>{game?.summary}</Text>
@@ -242,7 +243,7 @@ export default function GameScreen() {
       <BlurOverlay visible={!!shotOpen} onClose={() => setShotOpen(null)}>
         <View style={styles.popupWrap} pointerEvents="box-none">
           {shotOpen && (
-            <Animated.View entering={floatIn()} style={styles.shotFull} pointerEvents="none">
+            <Animated.View entering={popIn()} style={styles.shotFull} pointerEvents="none">
               <Image
                 source={{ uri: shotOpen.url }}
                 style={styles.shotFullImage}

@@ -22,7 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Milestone, SwitchTally } from '@/animations/config';
 import { AnimatedCount } from '@/components/animated-count';
-import { AppSwitcher } from '@/components/app-switcher';
+import { ScreenHeader } from '@/components/screen-header';
 import { CounterButton } from '@/components/counter-button';
 import { MilestoneBurst } from '@/components/milestone-burst';
 import { TallyChips } from '@/components/tally-chips';
@@ -75,22 +75,23 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.screen}>
-      <SafeAreaView style={styles.safeArea}>
+      <ScreenHeader
+        app="tally"
+        right={
+          <>
+            <LangToggle />
+            {current && (
+              <Pressable hitSlop={12} onPress={() => router.push(`/tally/${current.id}`)}>
+                <Text style={styles.link}>{t.history}</Text>
+              </Pressable>
+            )}
+          </>
+        }
+      />
+      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
         <KeyboardAvoidingView
           style={styles.flex}
           behavior={Platform.OS === 'web' ? undefined : 'padding'}>
-          <View style={styles.topBar}>
-            <AppSwitcher current="tally" />
-            <View style={styles.topRight}>
-              <LangToggle />
-              {current && (
-                <Pressable hitSlop={12} onPress={() => router.push(`/tally/${current.id}`)}>
-                  <Text style={styles.link}>{t.history}</Text>
-                </Pressable>
-              )}
-            </View>
-          </View>
-
           {current ? (
             <Animated.View
               key={current.id}
@@ -231,17 +232,9 @@ function NewTallyInput({ onDone, canCancel }: { onDone: () => void; canCancel: b
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.background, alignItems: 'center' },
-  safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth },
+  screen: { flex: 1, backgroundColor: C.background },
+  safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' },
   flex: { flex: 1 },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-  },
-  topRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.four },
   langToggle: { flexDirection: 'row', alignItems: 'center' },
   langItem: { flexDirection: 'row', alignItems: 'center' },
   langSeparator: {

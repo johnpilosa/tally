@@ -6,15 +6,15 @@ import { Easing, Keyframe } from 'react-native-reanimated';
 
 import { Overlay } from '@/animations/config';
 
-/** Curva que arranca rápido y llega muy suave, como si flotara hasta su lugar. */
-const dreamy = Easing.bezier(0.16, 1, 0.3, 1);
+/** Sale rápido y frena limpio, sin colita larga: se siente ágil pero no brusco. */
+const snappy = Easing.bezier(0.2, 0.8, 0.2, 1);
 
 /**
- * Aparece subiendo un poco, creciendo apenas y desvaneciéndose hacia visible.
+ * Aparece deslizándose un poco y creciendo apenas, mientras se hace visible.
  * `direction: -1` hace que baje desde arriba (para menús que cuelgan de un botón).
- * `index` suma un retraso para que los elementos de una lista entren en cascada.
+ * `index` suma un pequeño retraso para que las opciones de un menú entren en cascada.
  */
-export function floatIn({ direction = 1, index = 0 }: { direction?: 1 | -1; index?: number } = {}) {
+export function popIn({ direction = 1, index = 0 }: { direction?: 1 | -1; index?: number } = {}) {
   const { duration, rise, fromScale, stagger } = Overlay.enter;
   return new Keyframe({
     0: {
@@ -24,7 +24,7 @@ export function floatIn({ direction = 1, index = 0 }: { direction?: 1 | -1; inde
     100: {
       opacity: 1,
       transform: [{ translateY: 0 }, { scale: 1 }],
-      easing: dreamy,
+      easing: snappy,
     },
   })
     .duration(duration)

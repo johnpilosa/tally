@@ -1,10 +1,11 @@
 import { Image } from 'expo-image';
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
 
-import { floatIn } from '@/animations/presets';
+import { popIn } from '@/animations/presets';
 import { GamesMenuButton } from '@/components/games-nav';
+import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useGames } from '@/lib/games';
 import { useI18n } from '@/lib/i18n';
@@ -22,15 +23,15 @@ export default function ListScreen() {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: '', headerRight: () => <GamesMenuButton /> }} />
+      <ScreenHeader back="/games/lists" right={<GamesMenuButton />} />
       {!list ? (
         <View style={styles.center}>
           {loaded && <Text style={styles.label}>{t.games.listMissing}</Text>}
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <Animated.View entering={floatIn()}>
-            <Text style={styles.heading}>{list.name.toUpperCase()}</Text>
+          <Animated.View entering={popIn()}>
+            <ScreenTitle>{list.name.toUpperCase()}</ScreenTitle>
             <Text style={styles.label}>{t.games.gamesCount(inList.length)}</Text>
           </Animated.View>
 
@@ -39,7 +40,7 @@ export default function ListScreen() {
           {inList.map((g, i) => (
             <Animated.View
               key={g.id}
-              entering={floatIn({ index: Math.min(i + 1, 8) })}
+              entering={popIn({ index: Math.min(i + 1, 8) })}
               exiting={FadeOut.duration(200)}
               layout={LinearTransition}
               style={styles.row}>
@@ -75,14 +76,13 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: {
-    padding: Spacing.four,
+    paddingHorizontal: Spacing.four,
     paddingBottom: Spacing.six,
     gap: Spacing.three,
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
   },
-  heading: { fontFamily: Type.dot, fontSize: 40, lineHeight: 46, color: C.text },
   label: { fontFamily: Type.mono, fontSize: 10, color: C.textSecondary, letterSpacing: 1 },
   row: {
     flexDirection: 'row',

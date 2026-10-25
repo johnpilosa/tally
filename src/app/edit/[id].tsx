@@ -1,4 +1,6 @@
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+
+import { ScreenHeader } from '@/components/screen-header';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -22,8 +24,11 @@ export default function EditTallyScreen() {
   // (si se abre esta pantalla directo, los contadores todavía se están leyendo del almacenamiento).
   if (!tally) {
     return (
-      <View style={styles.missing}>
-        {loaded && <Text style={styles.label}>{t.counterMissing}</Text>}
+      <View style={styles.screen}>
+        <ScreenHeader back title={t.editTitle} />
+        <View style={styles.missing}>
+          {loaded && <Text style={styles.label}>{t.counterMissing}</Text>}
+        </View>
       </View>
     );
   }
@@ -65,7 +70,7 @@ function EditTallyForm({ tally }: { tally: Tally }) {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: t.editTitle }} />
+      <ScreenHeader back title={t.editTitle} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.label}>{t.name}</Text>
         <TextInput

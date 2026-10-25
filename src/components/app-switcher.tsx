@@ -4,9 +4,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { floatIn } from '@/animations/presets';
+import { popIn } from '@/animations/presets';
 import { BlurOverlay } from '@/components/blur-overlay';
-import { Colors, Spacing, Type } from '@/constants/theme';
+import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useI18n } from '@/lib/i18n';
 
 const C = Colors.dark;
@@ -46,11 +46,11 @@ export function AppSwitcher({ current }: { current: AppId }) {
       </Pressable>
 
       <BlurOverlay visible={open} onClose={() => setOpen(false)}>
-        <View style={[styles.menu, { top: insets.top + Spacing.three + 40 }]}>
+        <View style={[styles.menu, { top: insets.top + Layout.headerHeight }]}>
           {APPS.map((app, i) => {
             const active = app.id === current;
             return (
-              <Animated.View key={app.id} entering={floatIn({ direction: -1, index: i })}>
+              <Animated.View key={app.id} entering={popIn({ direction: -1, index: i })}>
                 <Pressable
                   onPress={() => go(app.id, app.route)}
                   style={({ pressed }) => [styles.item, pressed && { opacity: 0.6 }]}>
@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
   caret: { fontFamily: Type.mono, fontSize: 12, color: C.textSecondary },
   menu: {
     position: 'absolute',
-    left: Spacing.four,
-    right: Spacing.four,
+    left: Layout.gutter,
+    right: Layout.gutter,
     maxWidth: 360,
     gap: Spacing.two,
   },

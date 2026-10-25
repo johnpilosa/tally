@@ -69,5 +69,21 @@ export const Spacing = {
   six: 64,
 } as const;
 
+/**
+ * Medidas compartidas por todas las pantallas, para que se vean como un solo sistema.
+ * Si quieres más o menos aire en toda la app, cámbialo aquí.
+ */
+export const Layout = {
+  /** Margen a los costados de todas las pantallas. */
+  gutter: Spacing.four,
+  /** Alto de la barra de arriba (sin contar la muesca o la barra de estado). */
+  headerHeight: 56,
+  /** Ancho máximo del contenido en pantallas grandes (tablet, navegador). */
+  maxWidth: 800,
+  /** Bordes redondeados de tarjetas, popups y botones grandes. */
+  radius: 20,
+  popupRadius: 28,
+};
+
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;

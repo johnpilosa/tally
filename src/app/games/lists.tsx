@@ -1,14 +1,13 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { floatIn } from '@/animations/presets';
-import { AppSwitcher } from '@/components/app-switcher';
-import { GamesMenuButton, GamesTabBar } from '@/components/games-nav';
-import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
+import { popIn } from '@/animations/presets';
+import { GamesMenuButton } from '@/components/games-nav';
+import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
+import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames, type GameList } from '@/lib/games';
 import { useI18n } from '@/lib/i18n';
 
@@ -29,14 +28,10 @@ export default function ListsScreen() {
 
   return (
     <View style={styles.screen}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.topBar}>
-          <AppSwitcher current="games" />
-          <GamesMenuButton />
-        </View>
-
+      <ScreenHeader app="games" right={<GamesMenuButton />} />
+      <View style={styles.body}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.heading}>{t.games.listsTitle}</Text>
+          <ScreenTitle>{t.games.listsTitle}</ScreenTitle>
 
           <View style={styles.newRow}>
             <TextInput
@@ -65,8 +60,7 @@ export default function ListsScreen() {
             lists.map((list, i) => <ListRow key={list.id} list={list} index={i} />)
           )}
         </ScrollView>
-      </SafeAreaView>
-      <GamesTabBar current="lists" />
+      </View>
     </View>
   );
 }
@@ -79,16 +73,21 @@ function ListRow({ list, index }: { list: GameList; index: number }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const inList = games.filter((g) => g.listIds.includes(list.id));
 
+  // Al tocar GUARDAR, el campo pierde el foco justo antes del toque y eso ya guarda. Sin este
+  // aviso, el toque llegaba después, veía "no editando" y volvía a abrir la edición (el parpadeo).
+  const justSaved = useRef(0);
+
   const saveName = () => {
     const trimmed = draft.trim();
     if (trimmed) renameList(list.id, trimmed);
     else setDraft(list.name);
     setEditing(false);
+    justSaved.current = Date.now();
   };
 
   return (
     <Animated.View
-      entering={floatIn({ index: Math.min(index, 8) })}
+      entering={popIn({ index: Math.min(index, 8) })}
       exiting={FadeOut.duration(200)}
       layout={LinearTransition}
       style={styles.row}>
@@ -106,6 +105,7 @@ function ListRow({ list, index }: { list: GameList; index: number }) {
               onSubmitEditing={saveName}
               onBlur={saveName}
               autoFocus
+              selectTextOnFocus
               style={styles.renameInput}
             />
           ) : (
@@ -120,7 +120,10 @@ function ListRow({ list, index }: { list: GameList; index: number }) {
       <View style={styles.rowActions}>
         <Pressable
           hitSlop={8}
-          onPress={() => (editing ? saveName() : setEditing(true))}
+          onPress={() => {
+            if (editing) saveName();
+            else if (Date.now() - justSaved.current > 400) setEditing(true);
+          }}
           style={styles.action}>
           <Text style={styles.actionText}>{editing ? t.save : t.games.rename}</Text>
         </Pressable>
@@ -167,22 +170,8 @@ function Covers({ urls }: { urls: (string | null)[] }) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.background },
-  safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-  },
-  content: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.six, gap: Spacing.three },
-  heading: {
-    fontFamily: Type.dot,
-    fontSize: 44,
-    lineHeight: 50,
-    color: C.text,
-    marginTop: Spacing.five,
-  },
+  body: { flex: 1, width: '100%', maxWidth: Layout.maxWidth, alignSelf: 'center' },
+  content: { paddingHorizontal: Layout.gutter, paddingBottom: Spacing.six, gap: Spacing.three },
   link: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
   label: { fontFamily: Type.mono, fontSize: 10, color: C.textSecondary, letterSpacing: 1 },
   newRow: {

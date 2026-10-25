@@ -3,14 +3,13 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { floatIn } from '@/animations/presets';
-import { AppSwitcher } from '@/components/app-switcher';
+import { popIn } from '@/animations/presets';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { BouncePressable } from '@/components/bounce-pressable';
-import { GamesTabBar } from '@/components/games-nav';
-import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
+import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
+import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames, type Game } from '@/lib/games';
 import { useI18n } from '@/lib/i18n';
 import { yearOf } from '@/lib/wiki-games';
@@ -41,14 +40,15 @@ export default function MyGamesScreen() {
 
   return (
     <View style={styles.screen}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.topBar}>
-          <AppSwitcher current="games" />
+      <ScreenHeader
+        app="games"
+        right={
           <Pressable hitSlop={12} onPress={() => router.push('/games/search')}>
             <Text style={styles.link}>{t.games.add}</Text>
           </Pressable>
-        </View>
-
+        }
+      />
+      <View style={styles.body}>
         {loaded && games.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>{t.games.emptyTitle}</Text>
@@ -61,7 +61,9 @@ export default function MyGamesScreen() {
           </View>
         ) : (
           <>
-            <Text style={styles.heading}>{t.games.myGames}</Text>
+            <View style={styles.titleWrap}>
+              <ScreenTitle>{t.games.myGames}</ScreenTitle>
+            </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -94,8 +96,7 @@ export default function MyGamesScreen() {
             </ScrollView>
           </>
         )}
-      </SafeAreaView>
-      <GamesTabBar current="games" />
+      </View>
 
       <ListPicker gameId={listsFor} onClose={() => setListsFor(null)} />
     </View>
@@ -125,7 +126,7 @@ function GameRow({
 
   return (
     <Animated.View
-      entering={floatIn({ index: Math.min(index, 8) })}
+      entering={popIn({ index: Math.min(index, 8) })}
       layout={LinearTransition}
       style={styles.row}>
       <Pressable
@@ -178,7 +179,7 @@ function ListPicker({ gameId, onClose }: { gameId: string | null; onClose: () =>
   return (
     <BlurOverlay visible={!!game} onClose={onClose}>
       <View style={[styles.popupWrap, { paddingTop: insets.top }]} pointerEvents="box-none">
-        <Animated.View entering={floatIn()} style={styles.popup}>
+        <Animated.View entering={popIn()} style={styles.popup}>
           <Text style={styles.label}>{t.games.addToList}</Text>
           <Text style={styles.popupTitle} numberOfLines={2}>
             {game?.title.toUpperCase()}
@@ -253,24 +254,10 @@ function NewListForm({ onCreate }: { onCreate: (name: string) => void }) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.background },
-  safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-  },
+  body: { flex: 1, width: '100%', maxWidth: Layout.maxWidth, alignSelf: 'center' },
+  titleWrap: { paddingHorizontal: Layout.gutter },
   link: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
   label: { fontFamily: Type.mono, fontSize: 11, color: C.textSecondary, letterSpacing: 1 },
-  heading: {
-    fontFamily: Type.dot,
-    fontSize: 44,
-    lineHeight: 50,
-    color: C.text,
-    paddingHorizontal: Spacing.four,
-    marginTop: Spacing.five,
-  },
   empty: {
     flex: 1,
     alignItems: 'center',

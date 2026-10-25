@@ -1,9 +1,10 @@
-import { Stack, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { GamesMenuButton } from '@/components/games-nav';
+import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useGames } from '@/lib/games';
 import { useI18n } from '@/lib/i18n';
@@ -50,8 +51,9 @@ export default function SearchGameScreen() {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: t.games.addGame, headerRight: () => <GamesMenuButton /> }} />
+      <ScreenHeader app="games" right={<GamesMenuButton />} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScreenTitle>{t.games.navSearch}</ScreenTitle>
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -113,7 +115,8 @@ export default function SearchGameScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.background },
   content: {
-    padding: Spacing.four,
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.six,
     gap: Spacing.three,
     width: '100%',
     maxWidth: MaxContentWidth,

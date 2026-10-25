@@ -1,10 +1,11 @@
 import { Image } from 'expo-image';
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 
 import { GamesMenuButton } from '@/components/games-nav';
+import { ScreenHeader } from '@/components/screen-header';
 import { StarRating } from '@/components/star-rating';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { newId, RatingCategories, useGames, type Game } from '@/lib/games';
@@ -23,8 +24,11 @@ export default function ReviewScreen() {
 
   if (!game) {
     return (
-      <View style={[styles.screen, styles.center]}>
-        {loaded && <Text style={styles.label}>{t.games.missing}</Text>}
+      <View style={styles.screen}>
+        <ScreenHeader back="/games" title={t.games.reviewTitle} right={<GamesMenuButton />} />
+        <View style={[styles.screen, styles.center]}>
+          {loaded && <Text style={styles.label}>{t.games.missing}</Text>}
+        </View>
       </View>
     );
   }
@@ -58,9 +62,7 @@ function Review({ game }: { game: Game }) {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen
-        options={{ title: t.games.reviewTitle, headerRight: () => <GamesMenuButton /> }}
-      />
+      <ScreenHeader back="/games" title={t.games.reviewTitle} right={<GamesMenuButton />} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {/* Encabezado: portada, título, estado y favorito */}
         <Animated.View entering={FadeInDown.duration(250)} style={styles.header}>

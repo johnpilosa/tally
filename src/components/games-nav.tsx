@@ -1,13 +1,13 @@
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Line, Rect } from 'react-native-svg';
 
-import { floatIn } from '@/animations/presets';
+import { popIn } from '@/animations/presets';
 import { BlurOverlay } from '@/components/blur-overlay';
-import { Colors, Spacing, Type } from '@/constants/theme';
+import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useI18n } from '@/lib/i18n';
 
 const C = Colors.dark;
@@ -21,11 +21,21 @@ const SECTIONS: { id: GamesSection; route: string }[] = [
   { id: 'lists', route: '/games/lists' },
 ];
 
+/**
+ * Ir a una sección como en una barra de pestañas: se cierran las pantallas abiertas encima
+ * (fichas, reseñas) y se cambia a la sección, sin ir apilando historial.
+ */
 function go(section: GamesSection) {
   const route = SECTIONS.find((s) => s.id === section)!.route;
-  // Buscar se abre encima (con flecha para volver); juegos y listas reemplazan como pestañas.
-  if (section === 'search') router.push(route as '/');
-  else router.dismissTo(route as '/');
+  if (router.canDismiss()) router.dismissAll();
+  router.replace(route as '/');
+}
+
+/** En qué sección estamos según la ruta. Las fichas y reseñas cuentan como "mis juegos". */
+function sectionOf(pathname: string): GamesSection {
+  if (pathname.startsWith('/games/search')) return 'search';
+  if (pathname.startsWith('/games/list')) return 'lists';
+  return 'games';
 }
 
 /** Los íconos de cada sección, dibujados en líneas finas. */
@@ -118,9 +128,9 @@ export function GamesMenuButton() {
       </Pressable>
 
       <BlurOverlay visible={open} onClose={() => setOpen(false)}>
-        <View style={[styles.menu, { top: insets.top + 56 }]}>
+        <View style={[styles.menu, { top: insets.top + Layout.headerHeight }]}>
           {SECTIONS.map((s, i) => (
-            <Animated.View key={s.id} entering={floatIn({ direction: -1, index: i })}>
+            <Animated.View key={s.id} entering={popIn({ direction: -1, index: i })}>
               <Pressable
                 onPress={() => pick(s.id)}
                 style={({ pressed }) => [styles.menuItem, pressed && { opacity: 0.6 }]}>
@@ -135,10 +145,11 @@ export function GamesMenuButton() {
   );
 }
 
-/** Barra de abajo, como en Spotify: mis juegos, buscar y listas. */
-export function GamesTabBar({ current }: { current: GamesSection }) {
+/** Barra de abajo, como en Spotify: mis juegos, buscar y listas. Está en todas las pantallas. */
+export function GamesTabBar() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
+  const current = sectionOf(usePathname());
   const labels: Record<GamesSection, string> = {
     games: t.games.tabGames,
     search: t.games.tabSearch,
@@ -152,7 +163,7 @@ export function GamesTabBar({ current }: { current: GamesSection }) {
         return (
           <Pressable
             key={s.id}
-            onPress={() => !active && go(s.id)}
+            onPress={() => go(s.id)}
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             style={({ pressed }) => [styles.tab, pressed && { opacity: 0.6 }]}>
@@ -169,14 +180,9 @@ export function GamesTabBar({ current }: { current: GamesSection }) {
 }
 
 const styles = StyleSheet.create({
-  menuButton: {
-    flexDirection: 'row',
-    gap: 3,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.two,
-  },
+  menuButton: { flexDirection: 'row', gap: 3, paddingVertical: Spacing.two },
   menuDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: C.text },
-  menu: { position: 'absolute', right: Spacing.four, width: 220, gap: Spacing.two },
+  menu: { position: 'absolute', right: Layout.gutter, width: 220, gap: Spacing.two },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',

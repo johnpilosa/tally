@@ -1,4 +1,6 @@
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+
+import { ScreenHeader } from '@/components/screen-header';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
@@ -169,7 +171,7 @@ function IconEditor({ existing }: { existing: CustomIcon | undefined }) {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: t.iconEditorTitle }} />
+      <ScreenHeader back title={t.iconEditorTitle} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <GestureDetector gesture={gesture}>
           <View style={styles.canvas} accessibilityLabel={t.canvasA11y}>

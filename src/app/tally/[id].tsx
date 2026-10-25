@@ -1,4 +1,6 @@
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+
+import { ScreenHeader } from '@/components/screen-header';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -22,8 +24,11 @@ export default function TallyScreen() {
 
   if (!tally) {
     return (
-      <View style={styles.missing}>
-        {loaded && <Text style={styles.meta}>{t.counterMissing}</Text>}
+      <View style={styles.screen}>
+        <ScreenHeader back title={t.historyTitle} />
+        <View style={styles.missing}>
+          {loaded && <Text style={styles.meta}>{t.counterMissing}</Text>}
+        </View>
       </View>
     );
   }
@@ -45,7 +50,7 @@ export default function TallyScreen() {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: t.historyTitle }} />
+      <ScreenHeader back title={t.historyTitle} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <Text style={styles.name}>{tally.name}</Text>
