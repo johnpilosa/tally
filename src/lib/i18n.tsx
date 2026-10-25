@@ -179,6 +179,13 @@ const en = {
     screenshots: 'SCREENSHOTS',
     readMore: 'READ MORE +',
     close: 'CLOSE',
+    yourReview: 'YOUR REVIEW',
+    startReview: 'WRITE YOUR REVIEW →',
+    editReview: 'KEEP WRITING →',
+    reviewTitlePlaceholder: 'Title',
+    reviewSubtitlePlaceholder: 'A subtitle, a one-line verdict…',
+    reviewBodyPlaceholder: 'Start writing…',
+    words: (n: number) => (n === 1 ? '1 WORD' : `${n} WORDS`),
   },
 };
 
@@ -348,6 +355,13 @@ const es: Strings = {
     screenshots: 'CAPTURAS',
     readMore: 'LEER MÁS +',
     close: 'CERRAR',
+    yourReview: 'TU RESEÑA',
+    startReview: 'ESCRIBIR TU RESEÑA →',
+    editReview: 'SEGUIR ESCRIBIENDO →',
+    reviewTitlePlaceholder: 'Título',
+    reviewSubtitlePlaceholder: 'Un subtítulo, un veredicto en una línea…',
+    reviewBodyPlaceholder: 'Empieza a escribir…',
+    words: (n) => (n === 1 ? '1 PALABRA' : `${n} PALABRAS`),
   },
 };
 

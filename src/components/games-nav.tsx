@@ -155,12 +155,16 @@ export function GamesMenuButton() {
 export function GamesTabBar() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const current = sectionOf(usePathname());
+  const pathname = usePathname();
+  const current = sectionOf(pathname);
   const labels: Record<GamesSection, string> = {
     games: t.games.tabGames,
     search: t.games.tabSearch,
     lists: t.games.tabLists,
   };
+  // Escribiendo una reseña no se muestra: esa pantalla es solo para escribir.
+  if (pathname.startsWith('/games/write')) return null;
+
   return (
     <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, Spacing.three) }]}>
       {SECTIONS.map((s) => {

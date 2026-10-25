@@ -81,6 +81,12 @@ export default function GameScreen() {
     router.push({ pathname: '/games/review', params: { id: key } });
   };
 
+  /** "Escribir reseña" del popup: directo a la pantalla para escribir, sin pasar por la ficha. */
+  const writeReview = () => {
+    setAddedOpen(false);
+    router.push({ pathname: '/games/write', params: { id: key } });
+  };
+
   const year = game ? yearOf(game.description) : null;
   // Si ya está guardado, manda su estado guardado (puede cargar después de abrir la pantalla).
   const shownStatus = saved?.status ?? status;
@@ -213,7 +219,7 @@ export default function GameScreen() {
               {game?.title.toUpperCase()}
             </Text>
             <Pressable
-              onPress={openReview}
+              onPress={writeReview}
               style={({ pressed }) => [
                 styles.button,
                 styles.buttonPrimary,

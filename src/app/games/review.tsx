@@ -9,7 +9,7 @@ import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader } from '@/components/screen-header';
 import { StarRating } from '@/components/star-rating';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
-import { newId, RatingCategories, useGames, type Game } from '@/lib/games';
+import { newId, RatingCategories, reviewOf, useGames, type Game } from '@/lib/games';
 import { useNow } from '@/hooks/use-now';
 import { useI18n } from '@/lib/i18n';
 import { formatDate } from '@/lib/time';
@@ -44,6 +44,8 @@ function Review({ game }: { game: Game }) {
   const [confirmRemove, setConfirmRemove] = useState(false);
 
   const update = (changes: Partial<Game>) => updateGame(game.id, changes);
+  const written = reviewOf(game);
+  const hasReview = !!(written.title || written.subtitle || written.body);
 
   const addInsight = () => {
     const text = insight.trim();
@@ -99,16 +101,21 @@ function Review({ game }: { game: Game }) {
         </Appear>
 
         {/* Notas */}
-        <Section label={t.games.notes}>
-          <TextInput
-            value={game.notes}
-            onChangeText={(notes) => update({ notes })}
-            multiline
-            placeholder={t.games.notesPlaceholder}
-            placeholderTextColor={C.textSecondary}
-            style={styles.notes}
-            textAlignVertical="top"
-          />
+        <Section label={t.games.yourReview}>
+          <Pressable
+            onPress={() => router.push({ pathname: '/games/write', params: { id: game.id } })}
+            style={({ pressed }) => [styles.reviewCard, pressed && { opacity: 0.6 }]}>
+            {written.title ? <Text style={styles.reviewTitle}>{written.title}</Text> : null}
+            {written.subtitle ? (
+              <Text style={styles.reviewSubtitle}>{written.subtitle}</Text>
+            ) : null}
+            {written.body ? (
+              <Text style={styles.reviewExcerpt} numberOfLines={4}>
+                {written.body}
+              </Text>
+            ) : null}
+            <Text style={styles.link}>{hasReview ? t.games.editReview : t.games.startReview}</Text>
+          </Pressable>
         </Section>
 
         {/* Insights */}
@@ -240,13 +247,10 @@ const styles = StyleSheet.create({
   },
   label: { fontFamily: Type.mono, fontSize: 11, color: C.textSecondary, letterSpacing: 1 },
   link: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
-  notes: {
-    minHeight: 120,
-    fontFamily: Type.mono,
-    fontSize: 13,
-    lineHeight: 20,
-    color: C.text,
-  },
+  reviewCard: { gap: Spacing.two },
+  reviewTitle: { fontFamily: Type.dot, fontSize: 24, lineHeight: 28, color: C.text },
+  reviewSubtitle: { fontFamily: Type.mono, fontSize: 13, lineHeight: 19, color: C.textSecondary },
+  reviewExcerpt: { fontFamily: Type.mono, fontSize: 13, lineHeight: 20, color: C.text },
   insightRow: {
     flexDirection: 'row',
     alignItems: 'center',

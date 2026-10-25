@@ -18,6 +18,9 @@ export type GameStatus = 'playing' | 'played';
 
 export type Insight = { id: string; text: string; createdAt: number };
 
+/** La reseña escrita, con título, subtítulo y cuerpo. */
+export type WrittenReview = { title: string; subtitle: string; body: string; updatedAt: number };
+
 export type Game = {
   /** El identificador de Wikipedia del juego; también sirve como id acá. */
   id: string;
@@ -29,7 +32,9 @@ export type Game = {
   favorite: boolean;
   /** Ids de las listas en las que está ("PS2", "5ta generación"…). */
   listIds: string[];
+  /** Notas de la versión anterior. Si hay y todavía no hay reseña, pasan a ser su cuerpo. */
   notes: string;
+  review?: WrittenReview;
   insights: Insight[];
   /** 1 a 5 por categoría, más `overall`. Si una no está, todavía no se puntuó. */
   ratings: Partial<Record<RatingCategory | 'overall', number>>;
@@ -135,6 +140,11 @@ export function GamesProvider({ children }: { children: ReactNode }) {
   };
 
   return <GamesContext.Provider value={store}>{children}</GamesContext.Provider>;
+}
+
+/** La reseña de un juego, con las notas viejas como cuerpo si todavía no se escribió una. */
+export function reviewOf(game: Game): WrittenReview {
+  return game.review ?? { title: '', subtitle: '', body: game.notes, updatedAt: game.addedAt };
 }
 
 export function useGames() {
