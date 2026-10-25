@@ -17,6 +17,7 @@ import { Appear } from '@/animations/appear';
 import { AnimatedCount } from '@/components/animated-count';
 import { ScreenHeader } from '@/components/screen-header';
 import { CounterButton } from '@/components/counter-button';
+import { LangSwitch } from '@/components/lang-switch';
 import { MilestoneBurst } from '@/components/milestone-burst';
 import { TallyChips } from '@/components/tally-chips';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
@@ -75,7 +76,7 @@ export default function HomeScreen() {
         app="tally"
         right={
           <>
-            <LangToggle />
+            <LangSwitch />
             {current && (
               <Pressable hitSlop={12} onPress={() => router.push(`/tally/${current.id}`)}>
                 <Text style={styles.link}>{t.history}</Text>
@@ -166,29 +167,6 @@ export default function HomeScreen() {
   );
 }
 
-/** "EN · ES": el idioma activo en blanco, el otro en gris. */
-function LangToggle() {
-  const { lang, setLang } = useI18n();
-  return (
-    <View style={styles.langToggle}>
-      {(['en', 'es'] as const).map((code, i) => (
-        <View key={code} style={styles.langItem}>
-          {i > 0 && <Text style={styles.langSeparator}>·</Text>}
-          <Pressable
-            hitSlop={8}
-            onPress={() => setLang(code)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: lang === code }}>
-            <Text style={[styles.link, lang !== code && styles.langInactive]}>
-              {code.toUpperCase()}
-            </Text>
-          </Pressable>
-        </View>
-      ))}
-    </View>
-  );
-}
-
 function NewTallyInput({ onDone, canCancel }: { onDone: () => void; canCancel: boolean }) {
   const { addTally } = useTallies();
   const { t } = useI18n();
@@ -232,15 +210,6 @@ function NewTallyInput({ onDone, canCancel }: { onDone: () => void; canCancel: b
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.background },
   safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' },
-  langToggle: { flexDirection: 'row', alignItems: 'center' },
-  langItem: { flexDirection: 'row', alignItems: 'center' },
-  langSeparator: {
-    fontFamily: Type.mono,
-    fontSize: 12,
-    color: C.textSecondary,
-    marginHorizontal: Spacing.two,
-  },
-  langInactive: { color: C.textSecondary },
   brand: { fontFamily: Type.dot, fontSize: 20, color: C.text, letterSpacing: 2 },
   link: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
   center: {

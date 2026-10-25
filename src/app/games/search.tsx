@@ -6,6 +6,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Appear } from '@/animations/appear';
 
 import { GamesMenuButton } from '@/components/games-nav';
+import { LangSwitch } from '@/components/lang-switch';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useGames } from '@/lib/games';
@@ -53,7 +54,15 @@ export default function SearchGameScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader app="games" right={<GamesMenuButton />} />
+      <ScreenHeader
+        app="games"
+        right={
+          <>
+            <LangSwitch />
+            <GamesMenuButton />
+          </>
+        }
+      />
       <KeyboardAwareScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"

@@ -30,6 +30,7 @@ const en = {
   statWeek: '7 DAYS',
   statTotal: 'TOTAL',
   confirmAgain: 'SURE? TAP AGAIN',
+  language: 'Language',
   deleteCounter: 'DELETE COUNTER',
 
   // Editor de contador
@@ -159,6 +160,9 @@ const en = {
     favorite: 'Favorite',
     removeGame: 'REMOVE FROM MY GAMES',
     gameOptions: 'Game options',
+    remove: 'REMOVE',
+    cancel: 'CANCEL',
+    removeFrom: (list: string) => `REMOVE FROM ${list}`,
     addFavorite: 'ADD TO FAVORITES',
     removeFavorite: 'REMOVE FROM FAVORITES',
     inLists: (n: number) => (n === 1 ? 'IN 1 LIST' : `IN ${n} LISTS`),
@@ -222,6 +226,7 @@ const es: Strings = {
   statWeek: '7 DÍAS',
   statTotal: 'TOTAL',
   confirmAgain: '¿SEGURO? TOCA OTRA VEZ',
+  language: 'Idioma',
   deleteCounter: 'ELIMINAR CONTADOR',
 
   editTitle: 'EDITAR',
@@ -345,6 +350,9 @@ const es: Strings = {
     favorite: 'Favorito',
     removeGame: 'QUITAR DE MIS JUEGOS',
     gameOptions: 'Opciones del juego',
+    remove: 'QUITAR',
+    cancel: 'CANCELAR',
+    removeFrom: (list) => `QUITAR DE ${list}`,
     addFavorite: 'AGREGAR A FAVORITOS',
     removeFavorite: 'QUITAR DE FAVORITOS',
     inLists: (n) => (n === 1 ? 'EN 1 LISTA' : `EN ${n} LISTAS`),

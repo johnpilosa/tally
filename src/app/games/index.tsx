@@ -1,14 +1,17 @@
+import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { Appear } from '@/animations/appear';
 import { FilterSwitch } from '@/animations/config';
 import { BouncePressable } from '@/components/bounce-pressable';
+import { LangSwitch } from '@/components/lang-switch';
 import { LapChip } from '@/components/lap-chip';
 import { ListPicker } from '@/components/list-picker';
+import { RemovePopup } from '@/components/remove-popup';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames, type Game } from '@/lib/games';
@@ -23,27 +26,27 @@ type Filter = 'all' | 'playing' | 'played' | 'favorites';
 /** Mis juegos: la lista, con filtros por estado, favoritos y listas propias. */
 export default function MyGamesScreen() {
   const { t } = useI18n();
-  const { games, loaded, updateGame } = useGames();
+  const { games, loaded, updateGame, removeGame } = useGames();
   const [filter, setFilter] = useState<Filter>('all');
   const [listsFor, setListsFor] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<Game | null>(null);
   const focusKey = useFocusKey();
 
   // El chip cambia al instante; la lista espera a que la anterior se desvanezca y recién
   // entonces muestra el nuevo filtro (que entra con su animación).
   const [listFilter, setListFilter] = useState<Filter>('all');
-  const listOpacity = useSharedValue(1);
-  const listStyle = useAnimatedStyle(() => ({ opacity: listOpacity.get() }));
+  const [leaving, setLeaving] = useState(false);
   const switchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => clearTimeout(switchTimer.current ?? undefined), []);
 
   const pickFilter = (next: Filter) => {
     if (next === filter) return;
     setFilter(next);
-    listOpacity.set(withTiming(0, { duration: FilterSwitch.leave }));
+    setLeaving(true);
     clearTimeout(switchTimer.current ?? undefined);
     switchTimer.current = setTimeout(() => {
       setListFilter(next);
-      listOpacity.set(1);
+      setLeaving(false);
     }, FilterSwitch.leave);
   };
 
@@ -65,9 +68,12 @@ export default function MyGamesScreen() {
       <ScreenHeader
         app="games"
         right={
-          <Pressable hitSlop={12} onPress={() => router.push('/games/search')}>
-            <Text style={styles.link}>{t.games.add}</Text>
-          </Pressable>
+          <>
+            <LangSwitch />
+            <Pressable hitSlop={12} onPress={() => router.push('/games/search')}>
+              <Text style={styles.link}>{t.games.add}</Text>
+            </Pressable>
+          </>
         }
       />
       <View style={styles.body}>
@@ -105,9 +111,7 @@ export default function MyGamesScreen() {
 
             <ScrollView contentContainerStyle={styles.list}>
               {/* Cambiar de filtro o volver a la pantalla vuelve a animar la lista. */}
-              <Animated.View
-                key={`${listFilter}-${focusKey}`}
-                style={[{ gap: Spacing.two }, listStyle]}>
+              <FilterList key={`${listFilter}-${focusKey}`} leaving={leaving}>
                 {shown.length === 0 && (
                   <Appear>
                     <Text style={styles.label}>{t.games.emptyFilter}</Text>
@@ -120,17 +124,42 @@ export default function MyGamesScreen() {
                     index={i}
                     onToggleFavorite={() => updateGame(g.id, { favorite: !g.favorite })}
                     onLists={() => setListsFor(g.id)}
+                    onLongPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      setRemoving(g);
+                    }}
                   />
                 ))}
-              </Animated.View>
+              </FilterList>
             </ScrollView>
           </>
         )}
       </View>
 
       <ListPicker gameId={listsFor} onClose={() => setListsFor(null)} />
+      <RemovePopup
+        title={removing?.title ?? null}
+        label={t.games.removeGame}
+        onConfirm={() => removing && removeGame(removing.id)}
+        onClose={() => setRemoving(null)}
+      />
     </View>
   );
+}
+
+/**
+ * La lista de un filtro. Cada filtro monta una nueva (por su `key`), con su propia opacidad:
+ * así la nueva nunca hereda el desvanecido de la anterior. Antes se volvía a poner la opacidad
+ * en 1 al cambiar, y en el teléfono eso llegaba un instante antes que la lista nueva: la vieja
+ * reaparecía de golpe y parpadeaba.
+ */
+function FilterList({ leaving, children }: { leaving: boolean; children: ReactNode }) {
+  const opacity = useSharedValue(1);
+  useEffect(() => {
+    if (leaving) opacity.set(withTiming(0, { duration: FilterSwitch.leave }));
+  }, [leaving, opacity]);
+  const style = useAnimatedStyle(() => ({ opacity: opacity.get() }));
+  return <Animated.View style={[{ gap: Spacing.two }, style]}>{children}</Animated.View>;
 }
 
 function GameRow({
@@ -138,11 +167,14 @@ function GameRow({
   index,
   onToggleFavorite,
   onLists,
+  onLongPress,
 }: {
   game: Game;
   index: number;
   onToggleFavorite: () => void;
   onLists: () => void;
+  /** Mantenerlo presionado: pregunta si quitarlo de mis juegos. */
+  onLongPress: () => void;
 }) {
   const { t } = useI18n();
   const overall = game.ratings.overall;
@@ -158,6 +190,7 @@ function GameRow({
     <Appear options={{ index: Math.min(index, 8) }} style={styles.row}>
       <Pressable
         onPress={() => router.push({ pathname: '/games/review', params: { id: game.id } })}
+        onLongPress={onLongPress}
         style={({ pressed }) => [styles.rowMain, pressed && { opacity: 0.6 }]}>
         {game.coverUrl ? (
           <Image source={{ uri: game.coverUrl }} style={styles.thumb} contentFit="cover" />

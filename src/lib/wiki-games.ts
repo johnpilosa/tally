@@ -1,5 +1,6 @@
 /**
- * Búsqueda de juegos y su info (resumen y portada) usando Wikipedia en inglés.
+ * Búsqueda de juegos y su info (resumen y portada) usando Wikipedia en inglés. El resumen
+ * también se puede traer en otro idioma (`fetchSummaryIn`).
  * No necesita clave. Si en el futuro se quiere usar otra fuente (por ejemplo SteamGridDB para
  * portadas), este es el único archivo que hay que cambiar.
  */
@@ -59,6 +60,36 @@ export async function fetchGame(key: string, signal?: AbortSignal): Promise<Game
     summary: data.extract ?? '',
     coverUrl: data.originalimage?.source ?? data.thumbnail?.source ?? null,
   };
+}
+
+/**
+ * El resumen del mismo juego en otro idioma (por ejemplo "es"), sacado de su artículo en esa
+ * Wikipedia. Si el juego no tiene artículo en ese idioma, devuelve null y se usa el de inglés.
+ */
+export async function fetchSummaryIn(
+  key: string,
+  lang: string,
+  signal?: AbortSignal,
+): Promise<string | null> {
+  // Primero, cómo se llama el artículo en ese idioma (origin=* deja pedirlo desde el navegador).
+  const links = await fetch(
+    `${WIKI}/w/api.php?action=query&format=json&origin=*&prop=langlinks&lllang=${lang}` +
+      `&titles=${encodeURIComponent(key)}`,
+    { signal },
+  );
+  if (!links.ok) return null;
+  const data: { query?: { pages?: Record<string, { langlinks?: { '*': string }[] }> } } =
+    await links.json();
+  const title = Object.values(data.query?.pages ?? {})[0]?.langlinks?.[0]?.['*'];
+  if (!title) return null;
+
+  const res = await fetch(
+    `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/ /g, '_'))}`,
+    { signal },
+  );
+  if (!res.ok) return null;
+  const page: { extract?: string } = await res.json();
+  return page.extract || null;
 }
 
 /** El año que aparece en la descripción ("2001 video game" → "2001"), si hay. */

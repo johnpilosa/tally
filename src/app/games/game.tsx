@@ -15,6 +15,7 @@ import { useI18n } from '@/lib/i18n';
 import {
   fetchGame,
   fetchScreenshots,
+  fetchSummaryIn,
   yearOf,
   type GameInfo,
   type Screenshot,
@@ -27,7 +28,7 @@ const RADIUS = 20;
 /** Ficha de un juego: título, resumen y portada lado a lado, capturas, y botones para agregarlo. */
 export default function GameScreen() {
   const { key } = useLocalSearchParams<{ key: string }>();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { games, addGame, updateGame } = useGames();
   const { width } = useWindowDimensions();
   const saved = games.find((g) => g.id === key);
@@ -41,6 +42,20 @@ export default function GameScreen() {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [shotOpen, setShotOpen] = useState<Screenshot | null>(null);
   const focusKey = useFocusKey();
+  // El resumen en el idioma de la app, si no es inglés (se trae aparte; mientras, va el inglés).
+  // Se guarda junto con el juego e idioma que pidió, para no mostrar uno viejo al cambiar.
+  const [localSummary, setLocalSummary] = useState<{ for: string; text: string | null } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!key || lang === 'en') return;
+    const controller = new AbortController();
+    fetchSummaryIn(key, lang, controller.signal)
+      .then((text) => setLocalSummary({ for: `${key}:${lang}`, text }))
+      .catch(() => {});
+    return () => controller.abort();
+  }, [key, lang]);
 
   useEffect(() => {
     if (!key) return;
@@ -60,6 +75,8 @@ export default function GameScreen() {
   }, [key]);
 
   const game = saved ?? info;
+  const summary =
+    (lang !== 'en' && localSummary?.for === `${key}:${lang}` && localSummary.text) || game?.summary;
   const content = Math.min(width, MaxContentWidth) - SIDE * 2;
   const coverWidth = content * 0.42;
   const boxHeight = coverWidth * 1.5;
@@ -114,7 +131,7 @@ export default function GameScreen() {
             <Appear options={{ index: 2 }} style={[styles.boxes, { height: boxHeight }]}>
               <Pressable onPress={() => setSummaryOpen(true)} style={styles.summaryBox}>
                 <Text style={styles.label}>{t.games.about}</Text>
-                <Text style={styles.summary}>{game.summary || t.games.noSummary}</Text>
+                <Text style={styles.summary}>{summary || t.games.noSummary}</Text>
                 {/* Se desvanece abajo en vez de cortarse de golpe. */}
                 <Svg style={styles.fade} pointerEvents="none">
                   <Defs>
@@ -242,7 +259,7 @@ export default function GameScreen() {
           <Appear style={[styles.popup, styles.summaryPopup]}>
             <Text style={styles.label}>{t.games.about}</Text>
             <ScrollView>
-              <Text style={styles.summaryFull}>{game?.summary}</Text>
+              <Text style={styles.summaryFull}>{summary}</Text>
             </ScrollView>
             <Pressable onPress={() => setSummaryOpen(false)} style={styles.popupSecondary}>
               <Text style={[styles.buttonText, styles.dim]}>{t.games.close}</Text>

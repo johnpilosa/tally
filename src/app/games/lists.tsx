@@ -6,6 +6,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { Appear } from '@/animations/appear';
 import { GamesMenuButton } from '@/components/games-nav';
+import { LangSwitch } from '@/components/lang-switch';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames, type GameList } from '@/lib/games';
@@ -30,7 +31,15 @@ export default function ListsScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader app="games" right={<GamesMenuButton />} />
+      <ScreenHeader
+        app="games"
+        right={
+          <>
+            <LangSwitch />
+            <GamesMenuButton />
+          </>
+        }
+      />
       <View style={styles.body}>
         <KeyboardAwareScrollView
           contentContainerStyle={styles.content}

@@ -46,10 +46,17 @@ export const RingPulse = {
   easing: Easing.out(Easing.cubic),
 };
 
+/** El interruptor EN/ES: cuánto tarda la perilla en deslizarse al otro idioma, en milisegundos. */
+export const LangSwitch = {
+  duration: 180,
+};
+
 /** El número del contador al cambiar: entra desde abajo al sumar y desde arriba al deshacer. */
 export const CountChange = {
-  damping: 16,
-  stiffness: 260,
+  /** Cuánto tarda en entrar, en milisegundos. Sin resorte: llega y se queda quieto. */
+  duration: 220,
+  /** Desde cuántos puntos más abajo (o más arriba) entra. */
+  distance: 28,
 };
 
 /* ─────────────────────────── ÍCONOS ─────────────────────────── */
