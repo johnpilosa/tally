@@ -97,13 +97,13 @@ export const Nerd = {
   tiltSettle: { damping: 8, stiffness: 180 },
 };
 
-/** La nave: se parte a la mitad con un destello, queda flotando y se vuelve a juntar. */
+/** La Supremacy y la maniobra Holdo: un rayo la corta, saltan esquirlas y el pedazo sale girando. */
 export const StarDestroyer = {
   /**
-   * Dónde corta el rayo: la línea vertical en x = `cutX` del dibujo (lienzo de 100; la nave va
-   * de x 20 a 80). Lo que queda a la izquierda es el pedazo que sale volando.
+   * Dónde corta el rayo: la línea vertical en x = `cutX` del dibujo (lienzo de 100; las alas
+   * van de x 6 a 94 y el centro está en 50). Lo que queda a la izquierda sale volando.
    */
-  cutX: 38.5,
+  cutX: 30,
   /** Cuánto tarda el rayo en cruzar la nave de arriba a abajo, en milisegundos. */
   beamDuration: 140,
   /** Cuánto dura el brillo del rayo después de cruzar, apagándose. */

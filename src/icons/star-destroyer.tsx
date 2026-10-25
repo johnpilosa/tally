@@ -21,17 +21,18 @@ const WHITE = Colors.dark.text;
 const BLACK = Colors.dark.background;
 
 /*
- * Destructor estelar visto desde arriba, sobre un lienzo de 100×100:
- * una cuña con la punta arriba en (50, 10) y la popa abajo, de x 20 a 80 en y 84.
+ * La Supremacy (la nave de Snoke en Los últimos Jedi) vista desde arriba, sobre un lienzo de
+ * 100×100: un ala ancha en forma de flecha, con la punta arriba en (50, 26), las puntas de las
+ * alas en x 6 y 94, y el borde de atrás que sube hasta (50, 60) en el centro.
  *
  * La maniobra Holdo: un rayo baja por la línea x = `cutX`, saltan partículas desde el corte y
  * el pedazo de la izquierda sale girando. Después todo vuelve a su lugar.
  */
 
 const { cutX } = StarDestroyer;
-/** Dónde el corte entra al casco (el borde izquierdo de la cuña) y dónde sale (la popa). */
-const CUT_TOP = 10 + ((50 - cutX) / 30) * 74;
-const CUT_BOTTOM = 84;
+/** Dónde el corte entra al ala (el borde de adelante) y dónde sale (el borde de atrás). */
+const CUT_TOP = 26 + ((50 - cutX) / 44) * 40;
+const CUT_BOTTOM = 60 + ((50 - cutX) / 40) * 12;
 /** El pedazo cortado gira desde el medio del corte. */
 const PIVOT = `${cutX}% ${(CUT_TOP + CUT_BOTTOM) / 2}%`;
 
@@ -165,29 +166,38 @@ function Ship({ clipId, side }: { clipId: string; side: 'left' | 'right' }) {
         </ClipPath>
       </Defs>
       <G clipPath={`url(#${clipId})`}>
-        {/* Casco */}
+        {/* El ala */}
         <Polygon
-          points="50,10 80,84 20,84"
+          points="50,26 94,66 90,72 50,60 10,72 6,66"
           stroke={WHITE}
           strokeWidth={1.4}
           strokeLinejoin="round"
           fill={BLACK}
         />
-        <Path d="M50 10 L50 84" stroke={WHITE} strokeWidth={1.4} />
-        {/* Líneas de paneles */}
+        {/* El lomo del centro y las líneas de paneles que siguen el ala */}
+        <Path d="M50 26 L50 60" stroke={WHITE} strokeWidth={1.2} />
         <Path
-          d="M50 34 L38 76 M50 56 L30 80 M50 34 L62 76 M50 56 L70 80"
+          d="M50 36 L18 64 M50 36 L82 64 M50 46 L30 64 M50 46 L70 64"
           stroke={WHITE}
           strokeOpacity={0.4}
           strokeWidth={0.8}
         />
-        {/* Torre de mando */}
-        <Rect x={44} y={66} width={12} height={10} stroke={WHITE} strokeWidth={1.2} fill={BLACK} />
-        <Rect x={41} y={64} width={18} height={3} stroke={WHITE} strokeWidth={1} fill={BLACK} />
-        <Path d="M50 66 L50 76" stroke={WHITE} strokeWidth={1.2} />
-        {/* Motores */}
-        <Rect x={36} y={84} width={7} height={3} stroke={WHITE} strokeWidth={1} fill={BLACK} />
-        <Rect x={57} y={84} width={7} height={3} stroke={WHITE} strokeWidth={1} fill={BLACK} />
+        {/* La ciudad del centro, donde está el trono */}
+        <Polygon
+          points="50,38 56,47 50,55 44,47"
+          stroke={WHITE}
+          strokeWidth={1.2}
+          strokeLinejoin="round"
+          fill={BLACK}
+        />
+        <Path d="M50 38 L50 55" stroke={WHITE} strokeWidth={1} />
+        {/* Motores a lo largo del borde de atrás */}
+        <Path
+          d="M18 70 L18 73 M26 68 L26 71 M34 66 L34 69 M66 66 L66 69 M74 68 L74 71 M82 70 L82 73"
+          stroke={WHITE}
+          strokeWidth={1.2}
+          strokeLinecap="round"
+        />
       </G>
     </Svg>
   );
@@ -241,8 +251,8 @@ function Particle({
 }
 
 const styles = StyleSheet.create({
-  // El resto de la nave se mueve desde la popa, empujado por el golpe.
-  hullPivot: { transformOrigin: '50% 84%' },
+  // El resto de la nave se mueve desde el centro de atrás, empujado por el golpe.
+  hullPivot: { transformOrigin: '50% 60%' },
   beam: { position: 'absolute', width: 8, alignItems: 'center', transformOrigin: 'top' },
   beamGlow: {
     ...StyleSheet.absoluteFill,

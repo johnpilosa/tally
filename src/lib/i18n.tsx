@@ -88,7 +88,7 @@ const en = {
     car: 'ROUNDABOUT',
     grawlix: '#$%&!',
     nerd: 'NERD',
-    starDestroyer: 'DESTROYER',
+    starDestroyer: 'SUPREMACY',
   },
 
   // Fechas
@@ -281,7 +281,7 @@ const es: Strings = {
     car: 'ROTONDA',
     grawlix: '#$%&!',
     nerd: 'NERD',
-    starDestroyer: 'DESTRUCTOR',
+    starDestroyer: 'SUPREMACY',
   },
 
   justNow: 'recién',
