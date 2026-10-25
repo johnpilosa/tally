@@ -39,6 +39,8 @@ export type Game = {
   /** 0,5 a 5 (de media en media) por categoría, más `overall`. Si una no está, todavía no se puntuó. */
   ratings: Partial<Record<RatingCategory | 'overall', number>>;
   addedAt: number;
+  /** El id del mismo juego en RetroAchievements, si está enlazado (para ver los logros). */
+  raGameId?: number;
 };
 
 export type GameList = { id: string; name: string };
@@ -49,7 +51,8 @@ type Saved = { games: Game[]; lists: GameList[] };
 
 type GamesStore = Saved & {
   loaded: boolean;
-  addGame: (info: GameInfo, status: GameStatus) => void;
+  /** `extra` agrega o pisa campos del juego nuevo (por ejemplo `raGameId`). */
+  addGame: (info: GameInfo, status: GameStatus, extra?: Partial<Game>) => void;
   updateGame: (id: string, changes: Partial<Game>) => void;
   removeGame: (id: string) => void;
   createList: (name: string) => string;
@@ -87,7 +90,7 @@ export function GamesProvider({ children }: { children: ReactNode }) {
   const store: GamesStore = {
     ...saved,
     loaded,
-    addGame: (info, status) =>
+    addGame: (info, status, extra) =>
       updateGames((games) =>
         games.some((g) => g.id === info.key)
           ? games
@@ -105,6 +108,7 @@ export function GamesProvider({ children }: { children: ReactNode }) {
                 insights: [],
                 ratings: {},
                 addedAt: Date.now(),
+                ...extra,
               },
               ...games,
             ],

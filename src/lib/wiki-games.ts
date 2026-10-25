@@ -20,11 +20,17 @@ export type GameInfo = GameHit & {
   coverUrl: string | null;
 };
 
-/** Solo páginas de juegos: "2001 video game" sí, "video game series" o "film" no. */
+/**
+ * Solo páginas de juegos: "2001 video game" o "2003 action-adventure game" sí; "video game
+ * series", "board game" o "film" no.
+ */
 function isGame(description: string | null | undefined) {
   if (!description) return false;
   return (
-    /video game/i.test(description) && !/series|franchise|character|company/i.test(description)
+    /\bgames?\b/i.test(description) &&
+    !/series|franchise|character|company|board|card|tabletop|show|theory|designer|engine/i.test(
+      description,
+    )
   );
 }
 

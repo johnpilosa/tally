@@ -12,6 +12,7 @@ import { BlurHost } from '@/components/blur-overlay';
 import { CustomIconsProvider } from '@/lib/custom-icons';
 import { GamesProvider } from '@/lib/games';
 import { I18nProvider } from '@/lib/i18n';
+import { RAProvider } from '@/lib/retro-achievements';
 import { TallyProvider } from '@/lib/tallies';
 import '@/lib/web-scrollbar';
 
@@ -45,23 +46,25 @@ export default function RootLayout() {
             <CustomIconsProvider>
               <TallyProvider>
                 <GamesProvider>
-                  <BlurHost>
-                    {/* Ninguna pantalla usa la barra de arriba del sistema: todas dibujan <ScreenHeader>. */}
-                    <Stack
-                      screenOptions={{
-                        headerShown: false,
-                        contentStyle: { backgroundColor: Colors.dark.background },
-                      }}>
-                      <Stack.Screen name="index" />
-                      <Stack.Screen name="tally/[id]" />
-                      <Stack.Screen name="edit/[id]" options={{ presentation: 'modal' }} />
-                      <Stack.Screen name="icon-editor/[id]" options={{ presentation: 'modal' }} />
-                      <Stack.Screen
-                        name="games"
-                        options={{ animation: 'fade', animationDuration: 150 }}
-                      />
-                    </Stack>
-                  </BlurHost>
+                  <RAProvider>
+                    <BlurHost>
+                      {/* Ninguna pantalla usa la barra de arriba del sistema: todas dibujan <ScreenHeader>. */}
+                      <Stack
+                        screenOptions={{
+                          headerShown: false,
+                          contentStyle: { backgroundColor: Colors.dark.background },
+                        }}>
+                        <Stack.Screen name="index" />
+                        <Stack.Screen name="tally/[id]" />
+                        <Stack.Screen name="edit/[id]" options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="icon-editor/[id]" options={{ presentation: 'modal' }} />
+                        <Stack.Screen
+                          name="games"
+                          options={{ animation: 'fade', animationDuration: 150 }}
+                        />
+                      </Stack>
+                    </BlurHost>
+                  </RAProvider>
                 </GamesProvider>
               </TallyProvider>
             </CustomIconsProvider>

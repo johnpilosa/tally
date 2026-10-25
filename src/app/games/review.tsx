@@ -9,6 +9,7 @@ import { Appear } from '@/animations/appear';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { GamesMenuButton } from '@/components/games-nav';
 import { ListPicker } from '@/components/list-picker';
+import { RAAchievements } from '@/components/ra-achievements';
 import { ScreenHeader } from '@/components/screen-header';
 import { StarRating } from '@/components/star-rating';
 import { Colors, Layout, MaxContentWidth, Spacing, Type } from '@/constants/theme';
@@ -116,6 +117,11 @@ function Review({ game }: { game: Game }) {
               <Text style={styles.link}>{t.games.shareAsImage}</Text>
             </Pressable>
           )}
+        </Section>
+
+        {/* Logros de RetroAchievements */}
+        <Section label={t.games.raAchievements}>
+          <RAAchievements game={game} />
         </Section>
 
         {/* Insights */}

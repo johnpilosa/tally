@@ -2,7 +2,7 @@ import { router, usePathname } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Line, Rect } from 'react-native-svg';
+import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 
 import { Appear } from '@/animations/appear';
 import { eraseTitleThen } from '@/animations/title-bus';
@@ -145,9 +145,36 @@ export function GamesMenuButton() {
               </Pressable>
             </Appear>
           ))}
+          <Appear options={{ direction: -1, index: SECTIONS.length }}>
+            <Pressable
+              onPress={() => {
+                setOpen(false);
+                router.push('/games/retro');
+              }}
+              style={({ pressed }) => [styles.menuItem, pressed && { opacity: 0.6 }]}>
+              <TrophyIcon color={C.text} />
+              <Text style={styles.menuText}>{t.games.raTitle}</Text>
+            </Pressable>
+          </Appear>
         </View>
       </BlurOverlay>
     </>
+  );
+}
+
+/** Una copa, para RetroAchievements. */
+function TrophyIcon({ color }: { color: string }) {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 20 20">
+      <Path
+        d="M6 3 H14 V8 A4 4 0 0 1 6 8 Z M6 5 H3 A3 3 0 0 0 6 10 M14 5 H17 A3 3 0 0 1 14 10 M10 12 V15 M6.5 17 H13.5"
+        stroke={color}
+        strokeWidth={1.3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
   );
 }
 
