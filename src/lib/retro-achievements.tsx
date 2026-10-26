@@ -37,6 +37,19 @@ export type RAAchievement = {
   points: number;
   badge: string;
   earned: boolean;
+  /** Cuándo lo obtuviste (milisegundos), o null si todavía no. */
+  earnedAt: number | null;
+  /** Si lo sacaste en modo hardcore (sin guardar ni rebobinar). */
+  hardcore: boolean;
+  /** Cuántos jugadores lo tienen, en total y en hardcore. */
+  numAwarded: number;
+  numAwardedHardcore: number;
+  /** Puntos ponderados por rareza ("true ratio"). */
+  trueRatio: number;
+  /** "progression", "win_condition", "missable" o null. */
+  type: string | null;
+  author: string;
+  createdAt: number | null;
 };
 
 export type RAProgress = {
@@ -46,6 +59,8 @@ export type RAProgress = {
   total: number;
   /** "mastered", "completed", "beaten-hardcore"… o null si todavía nada. */
   award: string | null;
+  /** Cuántas personas jugaron este juego (para sacar el % de cada logro). */
+  players: number;
   achievements: RAAchievement[];
 };
 
@@ -109,6 +124,11 @@ export async function fetchPlayedGames(account: RAAccount): Promise<RAPlayedGame
   }));
 }
 
+/** Las fechas de la API vienen como "2016-03-12 17:47:29", en hora UTC. */
+function parseDate(date: string | undefined) {
+  return date ? Date.parse(date.replace(' ', 'T') + 'Z') : null;
+}
+
 export async function fetchProgress(account: RAAccount, gameId: number): Promise<RAProgress> {
   const data = await call<{
     Title: string;
@@ -116,6 +136,8 @@ export async function fetchProgress(account: RAAccount, gameId: number): Promise
     NumAchievements: number;
     NumAwardedToUser: number;
     HighestAwardKind: string | null;
+    NumDistinctPlayers?: number;
+    NumDistinctPlayersCasual?: number;
     Achievements: Record<
       string,
       {
@@ -126,6 +148,13 @@ export async function fetchProgress(account: RAAccount, gameId: number): Promise
         BadgeName: string;
         DisplayOrder: number;
         DateEarned?: string;
+        DateEarnedHardcore?: string;
+        NumAwarded?: number;
+        NumAwardedHardcore?: number;
+        TrueRatio?: number;
+        type?: string | null;
+        Author?: string;
+        DateCreated?: string;
       }
     >;
   }>(account, 'API_GetGameInfoAndUserProgress', { u: account.user, g: String(gameId) });
@@ -135,8 +164,10 @@ export async function fetchProgress(account: RAAccount, gameId: number): Promise
     earned: data.NumAwardedToUser,
     total: data.NumAchievements,
     award: data.HighestAwardKind ?? null,
+    players: data.NumDistinctPlayers ?? data.NumDistinctPlayersCasual ?? 0,
+    // Primero los obtenidos, del más reciente al más antiguo; después los que faltan, en el
+    // orden del juego.
     achievements: Object.values(data.Achievements ?? {})
-      .sort((a, b) => a.DisplayOrder - b.DisplayOrder)
       .map((a) => ({
         id: a.ID,
         title: a.Title,
@@ -144,7 +175,26 @@ export async function fetchProgress(account: RAAccount, gameId: number): Promise
         points: a.Points,
         badge: a.BadgeName,
         earned: !!a.DateEarned,
-      })),
+        earnedAt: parseDate(a.DateEarned),
+        hardcore: !!a.DateEarnedHardcore,
+        numAwarded: a.NumAwarded ?? 0,
+        numAwardedHardcore: a.NumAwardedHardcore ?? 0,
+        trueRatio: a.TrueRatio ?? 0,
+        type: a.type ?? null,
+        author: a.Author ?? '',
+        createdAt: parseDate(a.DateCreated),
+        order: a.DisplayOrder,
+      }))
+      .sort((a, b) =>
+        a.earnedAt !== null && b.earnedAt !== null
+          ? b.earnedAt - a.earnedAt
+          : a.earnedAt !== null
+            ? -1
+            : b.earnedAt !== null
+              ? 1
+              : a.order - b.order,
+      )
+      .map(({ order: _order, ...a }) => a),
   };
 }
 

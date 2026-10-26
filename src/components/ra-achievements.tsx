@@ -8,7 +8,9 @@ import { Appear } from '@/animations/appear';
 import { BlurOverlay } from '@/components/blur-overlay';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames, type Game } from '@/lib/games';
+import { useNow } from '@/hooks/use-now';
 import { useI18n } from '@/lib/i18n';
+import { formatDate } from '@/lib/time';
 import {
   cleanTitle,
   fetchPlayedGames,
@@ -55,12 +57,14 @@ export function RAAchievements({ game }: { game: Game }) {
 
 /** Cuántos llevas, la insignia de maestría si la tienes y todas las insignias de logros. */
 function Progress({ game, gameId }: { game: Game; gameId: number }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const now = useNow();
   const { account } = useRA();
   const { updateGame } = useGames();
   const [progress, setProgress] = useState<RAProgress | null>(null);
   const [failed, setFailed] = useState(false);
   const [picked, setPicked] = useState<RAAchievement | null>(null);
+  const [statsOpen, setStatsOpen] = useState(false);
 
   useEffect(() => {
     if (!account) return;
@@ -75,6 +79,9 @@ function Progress({ game, gameId }: { game: Game; gameId: number }) {
 
   if (failed) return <Text style={styles.label}>{t.games.raOffline}</Text>;
   if (!progress) return <Text style={styles.label}>{t.games.loading}</Text>;
+
+  // El que se muestra en grande: el que tocaste, o si no, el primero (el último que sacaste).
+  const selected = picked ?? progress.achievements[0] ?? null;
 
   const award = progress.award?.startsWith('beaten')
     ? t.games.raAwards.beaten
@@ -104,12 +111,71 @@ function Progress({ game, gameId }: { game: Game; gameId: number }) {
               style={[styles.barFill, { width: `${(progress.earned / progress.total) * 100}%` }]}
             />
           </View>
+          {/* Los últimos que sacaste, con nombre y fecha; después, todas las insignias. */}
+          {progress.earned > 0 && (
+            <View style={styles.latest}>
+              <Text style={styles.label}>{t.games.raLatest}</Text>
+              {progress.achievements
+                .filter((a) => a.earned)
+                .slice(0, LATEST)
+                .map((a) => (
+                  <View key={a.id} style={styles.latestRow}>
+                    <Image source={{ uri: raBadge(a.badge, true) }} style={styles.latestBadge} />
+                    <View style={styles.latestText}>
+                      <Text style={styles.pickedTitle} numberOfLines={1}>
+                        {a.title.toUpperCase()}
+                      </Text>
+                      <Text style={styles.label} numberOfLines={2}>
+                        {a.description}
+                      </Text>
+                    </View>
+                    <View style={styles.latestMeta}>
+                      <Text style={styles.label}>
+                        {a.earnedAt ? formatDate(a.earnedAt, now, lang).toUpperCase() : ''}
+                      </Text>
+                      <Text style={styles.label}>{t.games.raPointsShort(a.points)}</Text>
+                    </View>
+                  </View>
+                ))}
+            </View>
+          )}
+          {/* El logro elegido en el bloque de abajo (al abrir, el último que sacaste). */}
+          {selected && (
+            <Appear key={selected.id}>
+              <Pressable
+                onPress={() => setStatsOpen(true)}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.detail, pressed && { opacity: 0.7 }]}>
+                <Image
+                  source={{ uri: raBadge(selected.badge, selected.earned) }}
+                  style={[styles.detailBadge, !selected.earned && { opacity: 0.45 }]}
+                />
+                <View style={styles.latestText}>
+                  <Text style={styles.detailTitle} numberOfLines={1}>
+                    {selected.title.toUpperCase()}
+                  </Text>
+                  <Text style={styles.detailDescription} numberOfLines={3}>
+                    {selected.description}
+                  </Text>
+                  <Text style={styles.label}>
+                    {t.games.raPointsShort(selected.points)}
+                    {'  ·  '}
+                    {selected.earnedAt
+                      ? formatDate(selected.earnedAt, now, lang).toUpperCase()
+                      : t.games.raLocked}
+                  </Text>
+                </View>
+                {/* Tocar la tarjeta abre las estadísticas del logro. */}
+                <Text style={styles.chevron}>›</Text>
+              </Pressable>
+            </Appear>
+          )}
           <View style={styles.badges}>
             {progress.achievements.map((a) => (
               <Pressable
                 key={a.id}
-                onPress={() => setPicked(picked?.id === a.id ? null : a)}
-                style={[styles.badgeWrap, picked?.id === a.id && styles.badgePicked]}>
+                onPress={() => setPicked(a)}
+                style={[styles.badgeWrap, selected?.id === a.id && styles.badgePicked]}>
                 <Image
                   source={{ uri: raBadge(a.badge, a.earned) }}
                   style={[styles.badge, !a.earned && { opacity: 0.45 }]}
@@ -117,15 +183,6 @@ function Progress({ game, gameId }: { game: Game; gameId: number }) {
               </Pressable>
             ))}
           </View>
-          {/* Tocar una insignia muestra qué logro es. */}
-          {picked && (
-            <Appear key={picked.id} style={styles.picked}>
-              <Text style={styles.pickedTitle}>
-                {picked.title.toUpperCase()} · {picked.points}
-              </Text>
-              <Text style={styles.label}>{picked.description}</Text>
-            </Appear>
-          )}
         </>
       )}
       <Pressable
@@ -134,7 +191,109 @@ function Progress({ game, gameId }: { game: Game; gameId: number }) {
         style={styles.unlink}>
         <Text style={styles.label}>{t.games.raUnlink}</Text>
       </Pressable>
+      {selected && (
+        <AchievementStats
+          achievement={selected}
+          players={progress.players}
+          open={statsOpen}
+          onClose={() => setStatsOpen(false)}
+        />
+      )}
     </View>
+  );
+}
+
+/** Mini ventana con los números de un logro: qué tan raro es, puntos, tipo, cuándo lo sacaste. */
+function AchievementStats({
+  achievement: a,
+  players,
+  open,
+  onClose,
+}: {
+  achievement: RAAchievement;
+  players: number;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { t, lang } = useI18n();
+  const now = useNow();
+  const insets = useSafeAreaInsets();
+  const rate = players ? a.numAwarded / players : 0;
+  const pct = (n: number) =>
+    `${(n * 100).toLocaleString(lang, { maximumFractionDigits: n < 0.1 ? 2 : 1 })}%`;
+  const date = (ms: number | null) => (ms ? formatDate(ms, now, lang).toUpperCase() : '');
+  const type =
+    a.type && a.type in t.games.raTypes
+      ? t.games.raTypes[a.type as keyof typeof t.games.raTypes]
+      : null;
+
+  const rows: [string, string][] = [
+    [t.games.raPoints2, String(a.points)],
+    [t.games.raTrueRatio, String(a.trueRatio)],
+    ...(type ? ([[t.games.raType, type]] as [string, string][]) : []),
+    [
+      t.games.raYouUnlocked,
+      a.earned
+        ? `${date(a.earnedAt)} · ${a.hardcore ? t.games.raHardcore : t.games.raSoftcore}`
+        : t.games.raLocked,
+    ],
+    ...(a.author
+      ? ([[t.games.raAuthor, `${a.author.toUpperCase()} · ${date(a.createdAt)}`]] as [
+          string,
+          string,
+        ][])
+      : []),
+  ];
+
+  return (
+    <BlurOverlay visible={open} onClose={onClose}>
+      <View style={[styles.popupWrap, { paddingTop: insets.top }]} pointerEvents="box-none">
+        <Appear style={styles.popup}>
+          <View style={styles.statsHead}>
+            <Image
+              source={{ uri: raBadge(a.badge, a.earned) }}
+              style={[styles.statsBadge, !a.earned && { opacity: 0.45 }]}
+            />
+            <View style={styles.latestText}>
+              <Text style={styles.popupTitle}>{a.title.toUpperCase()}</Text>
+              <Text style={styles.detailDescription}>{a.description}</Text>
+            </View>
+          </View>
+
+          {players > 0 && (
+            <View style={styles.rarity}>
+              <View style={styles.rarityRow}>
+                <Text style={styles.rarityNumber}>{pct(rate)}</Text>
+                <Text style={[styles.label, { flex: 1 }]}>{t.games.raUnlockRate}</Text>
+              </View>
+              <View style={styles.bar}>
+                <View style={[styles.barFill, { width: `${Math.min(rate, 1) * 100}%` }]} />
+              </View>
+              <Text style={styles.label}>
+                {t.games.raOwners(a.numAwarded, players)}
+                {'  ·  '}
+                {t.games.raHardcoreRate(pct(a.numAwardedHardcore / players))}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.statsRows}>
+            {rows.map(([label, value]) => (
+              <View key={label} style={styles.statsRow}>
+                <Text style={styles.label}>{label}</Text>
+                <Text style={styles.statsValue}>{value}</Text>
+              </View>
+            ))}
+          </View>
+
+          <Pressable
+            onPress={onClose}
+            style={({ pressed }) => [styles.close, pressed && { opacity: 0.7 }]}>
+            <Text style={styles.closeText}>{t.games.close}</Text>
+          </Pressable>
+        </Appear>
+      </View>
+    </BlurOverlay>
   );
 }
 
@@ -212,6 +371,8 @@ function LinkPicker({ game, open, onClose }: { game: Game; open: boolean; onClos
 }
 
 const BADGE = 40;
+/** Cuántos logros recientes se listan arriba de las insignias. */
+const LATEST = 5;
 
 const styles = StyleSheet.create({
   link: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
@@ -230,11 +391,63 @@ const styles = StyleSheet.create({
   awardText: { fontFamily: Type.mono, fontSize: 10, color: C.text, letterSpacing: 1 },
   bar: { height: 3, borderRadius: 2, backgroundColor: C.border, overflow: 'hidden' },
   barFill: { height: '100%', backgroundColor: C.accent },
-  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: Spacing.two },
   badgeWrap: { borderRadius: 8, borderWidth: 1, borderColor: 'transparent', padding: 1 },
   badgePicked: { borderColor: C.text },
   badge: { width: BADGE, height: BADGE, borderRadius: 6, backgroundColor: C.backgroundElement },
-  picked: { gap: 2 },
+  // Alto fijo (y texto recortado a pocas líneas) para que el bloque de abajo no se mueva al
+  // elegir otro logro.
+  detail: {
+    height: 132,
+    marginBottom: Spacing.two,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    marginTop: Spacing.two,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
+  },
+  chevron: { fontFamily: Type.mono, fontSize: 20, color: C.textSecondary },
+  statsHead: { flexDirection: 'row', gap: Spacing.three, alignItems: 'center' },
+  statsBadge: { width: 80, height: 80, borderRadius: 12, backgroundColor: C.backgroundElement },
+  rarity: {
+    gap: Spacing.two,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+    paddingTop: Spacing.three,
+  },
+  rarityRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  rarityNumber: { fontFamily: Type.dot, fontSize: 40, lineHeight: 44, color: C.text },
+  statsRows: {
+    gap: Spacing.two,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+    paddingTop: Spacing.three,
+  },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three },
+  statsValue: {
+    flexShrink: 1,
+    textAlign: 'right',
+    fontFamily: Type.mono,
+    fontSize: 11,
+    color: C.text,
+    letterSpacing: 1,
+  },
+  detailBadge: { width: 64, height: 64, borderRadius: 10, backgroundColor: C.backgroundElement },
+  detailTitle: { fontFamily: Type.dot, fontSize: 20, lineHeight: 24, color: C.text },
+  detailDescription: { fontFamily: Type.mono, fontSize: 12, lineHeight: 17, color: C.text },
+  latest: { gap: Spacing.three },
+  latestRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  latestBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: C.backgroundElement,
+  },
+  latestText: { flex: 1, gap: 2 },
+  latestMeta: { alignItems: 'flex-end', gap: 2 },
   pickedTitle: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
   unlink: { alignSelf: 'flex-start' },
   popupWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.four },

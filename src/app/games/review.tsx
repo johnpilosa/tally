@@ -119,11 +119,6 @@ function Review({ game }: { game: Game }) {
           )}
         </Section>
 
-        {/* Logros de RetroAchievements */}
-        <Section label={t.games.raAchievements}>
-          <RAAchievements game={game} />
-        </Section>
-
         {/* Insights */}
         <Section label={t.games.insights}>
           <View style={styles.insightRow}>
@@ -189,6 +184,11 @@ function Review({ game }: { game: Game }) {
               color={C.accent}
             />
           </View>
+        </Section>
+
+        {/* Logros de RetroAchievements, al final */}
+        <Section label={t.games.raAchievements}>
+          <RAAchievements game={game} />
         </Section>
       </KeyboardAwareScrollView>
     </View>

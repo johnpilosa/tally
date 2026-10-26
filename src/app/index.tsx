@@ -79,7 +79,7 @@ export default function HomeScreen() {
             <LangSwitch />
             {current && (
               <Pressable hitSlop={12} onPress={() => router.push(`/tally/${current.id}`)}>
-                <Text style={styles.link}>{t.history}</Text>
+                <Text style={[styles.link, styles.headerLink]}>{t.history}</Text>
               </Pressable>
             )}
           </>
@@ -212,6 +212,9 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' },
   brand: { fontFamily: Type.dot, fontSize: 20, color: C.text, letterSpacing: 2 },
   link: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
+  // Ancho fijo, alineado a la derecha: así el interruptor EN/ES no se corre cuando el texto
+  // cambia de largo con el idioma ("+ ADD" / "+ AGREGAR").
+  headerLink: { minWidth: 96, textAlign: 'right' },
   center: {
     flex: 1,
     alignItems: 'center',

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
@@ -14,13 +15,15 @@ const BLACK = Colors.dark.background;
 export function CarIcon({ trigger, size }: IconProps) {
   // `rotation` es el ángulo actual; `target` es hacia dónde va. Se acumulan,
   // así que si tocas varias veces seguidas el auto suma vueltas en vez de saltar.
+  // `target` es un número común (no un valor de Reanimated): en el teléfono, leer un valor de
+  // Reanimated justo después de cambiarlo devuelve el anterior, y la primera vuelta no se veía.
   const rotation = useSharedValue(0);
-  const target = useSharedValue(0);
+  const target = useRef(0);
 
   useOnTrigger(trigger, () => {
     const sign = CarLap.direction === 'counterclockwise' ? -1 : 1;
-    target.set(target.get() + sign * CarLap.degrees);
-    rotation.set(withTiming(target.get(), { duration: CarLap.duration, easing: CarLap.easing }));
+    target.current += sign * CarLap.degrees;
+    rotation.set(withTiming(target.current, { duration: CarLap.duration, easing: CarLap.easing }));
   });
 
   const carStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotation.get()}deg` }] }));

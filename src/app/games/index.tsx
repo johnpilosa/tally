@@ -71,7 +71,7 @@ export default function MyGamesScreen() {
           <>
             <LangSwitch />
             <Pressable hitSlop={12} onPress={() => router.push('/games/search')}>
-              <Text style={styles.link}>{t.games.add}</Text>
+              <Text style={[styles.link, styles.headerLink]}>{t.games.add}</Text>
             </Pressable>
           </>
         }
@@ -228,6 +228,9 @@ const styles = StyleSheet.create({
   body: { flex: 1, width: '100%', maxWidth: Layout.maxWidth, alignSelf: 'center' },
   titleWrap: { paddingHorizontal: Layout.gutter },
   link: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
+  // Ancho fijo, alineado a la derecha: así el interruptor EN/ES no se corre cuando el texto
+  // cambia de largo con el idioma ("+ ADD" / "+ AGREGAR").
+  headerLink: { minWidth: 80, textAlign: 'right' },
   label: { fontFamily: Type.mono, fontSize: 11, color: C.textSecondary, letterSpacing: 1 },
   empty: {
     flex: 1,
