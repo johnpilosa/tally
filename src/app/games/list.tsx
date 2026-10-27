@@ -65,7 +65,13 @@ export default function ListScreen() {
                       {g.title.toUpperCase()}
                     </Text>
                     <Text style={styles.label}>
-                      {[t.games[g.status], yearOf(g.description)].filter(Boolean).join('  ·  ')}
+                      {[
+                        t.games[g.status],
+                        (g.platforms ?? []).join(' / ').toUpperCase() || null,
+                        yearOf(g.description),
+                      ]
+                        .filter(Boolean)
+                        .join('  ·  ')}
                     </Text>
                   </View>
                 </Pressable>

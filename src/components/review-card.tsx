@@ -39,6 +39,11 @@ export const ReviewCard = forwardRef<ComponentRef<typeof View>, { game: Game }>(
             <View style={[styles.chip, styles.chipActive]}>
               <Text style={[styles.chipText, { color: C.text }]}>{t.games[game.status]}</Text>
             </View>
+            {(game.platforms ?? []).map((p) => (
+              <View key={p} style={styles.chip}>
+                <Text style={[styles.chipText, { color: C.text }]}>{p.toUpperCase()}</Text>
+              </View>
+            ))}
             {game.favorite && (
               <View style={[styles.chip, { borderColor: C.accent }]}>
                 <Text style={[styles.chipText, { color: C.accent }]}>♥</Text>

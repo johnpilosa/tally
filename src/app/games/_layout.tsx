@@ -22,6 +22,7 @@ export default function GamesLayout() {
         <Stack.Screen name="index" options={{ animation: 'none' }} />
         <Stack.Screen name="search" options={{ animation: 'none' }} />
         <Stack.Screen name="lists" options={{ animation: 'none' }} />
+        <Stack.Screen name="profile" options={{ animation: 'none' }} />
       </Stack>
       <GamesTabBar />
     </View>

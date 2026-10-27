@@ -12,13 +12,14 @@ import { useI18n } from '@/lib/i18n';
 
 const C = Colors.dark;
 
-export type GamesSection = 'games' | 'search' | 'lists';
+export type GamesSection = 'games' | 'search' | 'lists' | 'profile';
 
 /** Las secciones de Retro Log, en el orden en que aparecen en el menú y la barra de abajo. */
 const SECTIONS: { id: GamesSection; route: string }[] = [
   { id: 'games', route: '/games' },
   { id: 'search', route: '/games/search' },
   { id: 'lists', route: '/games/lists' },
+  { id: 'profile', route: '/games/profile' },
 ];
 
 /**
@@ -40,6 +41,8 @@ function go(section: GamesSection, from: GamesSection) {
 function sectionOf(pathname: string): GamesSection {
   if (pathname.startsWith('/games/search')) return 'search';
   if (pathname.startsWith('/games/list')) return 'lists';
+  if (pathname.startsWith('/games/profile') || pathname.startsWith('/games/retro'))
+    return 'profile';
   return 'games';
 }
 
@@ -93,6 +96,18 @@ function SectionIcon({ section, color }: { section: GamesSection; color: string 
             strokeLinecap="round"
           />
         ))}
+      {section === 'profile' && (
+        <>
+          <Circle cx={10} cy={7} r={3.5} stroke={color} strokeWidth={1.3} fill="none" />
+          <Path
+            d="M3.5 17.5 A6.5 6.5 0 0 1 16.5 17.5"
+            stroke={color}
+            strokeWidth={1.3}
+            strokeLinecap="round"
+            fill="none"
+          />
+        </>
+      )}
     </Svg>
   );
 }
@@ -102,7 +117,9 @@ function sectionLabel(t: ReturnType<typeof useI18n>['t'], section: GamesSection)
     ? t.games.navMyGames
     : section === 'search'
       ? t.games.navSearch
-      : t.games.navLists;
+      : section === 'lists'
+        ? t.games.navLists
+        : t.games.navProfile;
 }
 
 /**
@@ -188,6 +205,7 @@ export function GamesTabBar() {
     games: t.games.tabGames,
     search: t.games.tabSearch,
     lists: t.games.tabLists,
+    profile: t.games.tabProfile,
   };
   // Escribiendo una reseña no se muestra: esa pantalla es solo para escribir.
   if (pathname.startsWith('/games/write') || pathname.startsWith('/games/share')) return null;

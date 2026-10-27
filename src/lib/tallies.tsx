@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { onRemote, persist } from '@/lib/persist';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import type { IconRef } from '@/icons';
@@ -53,9 +55,12 @@ export function TallyProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoaded(true));
   }, []);
 
+  // Si llega algo más nuevo de la nube (otro dispositivo), se usa eso.
+  useEffect(() => onRemote(STORAGE_KEY, (value) => setTallies(value as Tally[])), []);
+
   useEffect(() => {
     // No guardar antes de cargar, o pisaríamos lo guardado con la lista vacía.
-    if (loaded) AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tallies));
+    if (loaded) persist(STORAGE_KEY, tallies);
   }, [tallies, loaded]);
 
   useEffect(() => {

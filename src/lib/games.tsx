@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { onRemote, persist } from '@/lib/persist';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import type { GameInfo } from '@/lib/wiki-games';
@@ -41,6 +43,8 @@ export type Game = {
   addedAt: number;
   /** El id del mismo juego en RetroAchievements, si está enlazado (para ver los logros). */
   raGameId?: number;
+  /** En qué plataformas lo jugaste (de las de tu perfil). Puede ser más de una. */
+  platforms?: string[];
 };
 
 export type GameList = { id: string; name: string };
@@ -80,8 +84,11 @@ export function GamesProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoaded(true));
   }, []);
 
+  // Si llega algo más nuevo de la nube (otro dispositivo), se usa eso.
+  useEffect(() => onRemote(STORAGE_KEY, (value) => setSaved(value as Saved)), []);
+
   useEffect(() => {
-    if (loaded) AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    if (loaded) persist(STORAGE_KEY, saved);
   }, [saved, loaded]);
 
   const updateGames = (fn: (games: Game[]) => Game[]) =>

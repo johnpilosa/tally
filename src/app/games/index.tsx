@@ -180,6 +180,7 @@ function GameRow({
   const overall = game.ratings.overall;
   const meta = [
     t.games[game.status],
+    (game.platforms ?? []).join(' / ').toUpperCase() || null,
     yearOf(game.description),
     overall ? '★'.repeat(Math.floor(overall)) + (overall % 1 ? '½' : '') : null,
   ]

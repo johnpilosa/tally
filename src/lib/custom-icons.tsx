@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { onRemote, persist } from '@/lib/persist';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export const ShapeKinds = ['circle', 'square', 'triangle', 'star', 'line'] as const;
@@ -68,8 +70,11 @@ export function CustomIconsProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoaded(true));
   }, []);
 
+  // Si llega algo más nuevo de la nube (otro dispositivo), se usa eso.
+  useEffect(() => onRemote(STORAGE_KEY, (value) => setIcons(value as CustomIcon[])), []);
+
   useEffect(() => {
-    if (loaded) AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(icons));
+    if (loaded) persist(STORAGE_KEY, icons);
   }, [icons, loaded]);
 
   const store: CustomIconsStore = {

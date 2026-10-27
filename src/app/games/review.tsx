@@ -8,7 +8,9 @@ import { Appear } from '@/animations/appear';
 
 import { BlurOverlay } from '@/components/blur-overlay';
 import { GamesMenuButton } from '@/components/games-nav';
+import { ChipMenu } from '@/components/chip-menu';
 import { ListPicker } from '@/components/list-picker';
+import { PlatformPicker } from '@/components/platform-picker';
 import { RAAchievements } from '@/components/ra-achievements';
 import { ScreenHeader } from '@/components/screen-header';
 import { StarRating } from '@/components/star-rating';
@@ -79,16 +81,18 @@ function Review({ game }: { game: Game }) {
               {game.title.toUpperCase()}
             </Text>
             <View style={styles.chips}>
-              {(['playing', 'played'] as const).map((s) => (
-                <Pressable
-                  key={s}
-                  onPress={() => update({ status: s })}
-                  style={[styles.chip, game.status === s && styles.chipActive]}>
-                  <Text style={[styles.chipText, game.status === s && styles.chipTextActive]}>
-                    {t.games[s]}
-                  </Text>
-                </Pressable>
-              ))}
+              <ChipMenu
+                label={t.games[game.status]}
+                active
+                accessibilityLabel={t.games.statusLabel}
+                items={(['playing', 'played'] as const).map((st) => ({
+                  key: st,
+                  label: t.games[st],
+                  selected: game.status === st,
+                  onPress: () => update({ status: st }),
+                }))}
+              />
+              <PlatformPicker game={game} />
               <GameOptions game={game} />
             </View>
           </View>

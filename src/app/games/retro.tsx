@@ -9,6 +9,7 @@ import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames } from '@/lib/games';
 import { useI18n } from '@/lib/i18n';
+import { matchPlatform, useProfile } from '@/lib/profile';
 import {
   cleanTitle,
   fetchProfile,
@@ -172,6 +173,7 @@ function Connected({ account }: { account: RAAccount }) {
 function RecentRow({ game, index }: { game: RARecentGame; index: number }) {
   const { t } = useI18n();
   const { games, addGame, updateGame } = useGames();
+  const { profile } = useProfile();
   const [adding, setAdding] = useState(false);
   const inMyGames = games.some((g) => g.raGameId === game.gameId);
   const title = cleanTitle(game.title);
@@ -181,6 +183,13 @@ function RecentRow({ game, index }: { game: RARecentGame; index: number }) {
     if (adding || inMyGames) return;
     setAdding(true);
     const status = game.total > 0 && game.earned === game.total ? 'played' : 'playing';
+    // Si la consola es una de tus plataformas, queda marcada.
+    const linked = {
+      raGameId: game.gameId,
+      ...(matchPlatform(game.console, profile.platforms) && {
+        platforms: [matchPlatform(game.console, profile.platforms)!],
+      }),
+    };
     try {
       const hits = await searchGames(title);
       const best = hits
@@ -188,10 +197,12 @@ function RecentRow({ game, index }: { game: RARecentGame; index: number }) {
         .sort((a, b) => b.score - a.score)[0];
       if (best && best.score >= 0.5) {
         // Si ya lo tenías (agregado desde la búsqueda), solo se enlaza.
-        if (games.some((g) => g.id === best.hit.key)) {
-          updateGame(best.hit.key, { raGameId: game.gameId });
+        const existing = games.find((g) => g.id === best.hit.key);
+        if (existing) {
+          // Si ya le marcaste plataformas, no se tocan.
+          updateGame(best.hit.key, existing.platforms?.length ? { raGameId: game.gameId } : linked);
         } else {
-          addGame(await fetchGame(best.hit.key), status, { raGameId: game.gameId });
+          addGame(await fetchGame(best.hit.key), status, linked);
         }
         return;
       }
@@ -209,7 +220,7 @@ function RecentRow({ game, index }: { game: RARecentGame; index: number }) {
         coverUrl: game.boxArt,
       },
       status,
-      { raGameId: game.gameId },
+      linked,
     );
   };
 
