@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/animations/appear';
 import { BlurOverlay } from '@/components/blur-overlay';
+import { ChipMenu } from '@/components/chip-menu';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
 import { useGames, type Game } from '@/lib/games';
 import { useNow } from '@/hooks/use-now';
@@ -65,6 +66,15 @@ function Progress({ game, gameId }: { game: Game; gameId: number }) {
   const [failed, setFailed] = useState(false);
   const [picked, setPicked] = useState<RAAchievement | null>(null);
   const [statsOpen, setStatsOpen] = useState(false);
+  // El logro del que se muestran las estadísticas (de la tarjeta grande o de la lista de últimos).
+  const [statsFor, setStatsFor] = useState<RAAchievement | null>(null);
+  const [sort, setSort] = useState<Sort>('latest');
+  // Cuántos de la lista se ven (de a `LATEST`).
+  const [shown, setShown] = useState(LATEST);
+  const showStats = (a: RAAchievement) => {
+    setStatsFor(a);
+    setStatsOpen(true);
+  };
 
   useEffect(() => {
     if (!account) return;
@@ -79,6 +89,24 @@ function Progress({ game, gameId }: { game: Game; gameId: number }) {
 
   if (failed) return <Text style={styles.label}>{t.games.raOffline}</Text>;
   if (!progress) return <Text style={styles.label}>{t.games.loading}</Text>;
+
+  const players = progress.players;
+  const rate = (a: RAAchievement) => (players ? a.numAwarded / players : 1);
+  const rateOf = (a: RAAchievement) =>
+    players
+      ? `${(rate(a) * 100).toLocaleString(lang, { maximumFractionDigits: rate(a) < 0.1 ? 2 : 1 })}%`
+      : '';
+  const earned = progress.achievements.filter((a) => a.earned);
+  // La lista de arriba según cómo la ordenaste.
+  const listed =
+    sort === 'latest'
+      ? earned
+      : sort === 'rarest'
+        ? [...earned].sort((a, b) => rate(a) - rate(b))
+        : sort === 'points'
+          ? [...earned].sort((a, b) => b.points - a.points)
+          : // Los que te faltan, empezando por los que más gente tiene (los más fáciles).
+            progress.achievements.filter((a) => !a.earned).sort((a, b) => rate(b) - rate(a));
 
   // El que se muestra en grande: el que tocaste, o si no, el primero (el último que sacaste).
   const selected = picked ?? progress.achievements[0] ?? null;
@@ -96,54 +124,97 @@ function Progress({ game, gameId }: { game: Game; gameId: number }) {
       ) : (
         <>
           <View style={styles.summaryRow}>
-            <Text style={styles.count}>{t.games.raProgress(progress.earned, progress.total)}</Text>
-            {award && (
-              <View style={[styles.award, progress.award === 'mastered' && styles.mastered]}>
-                <Text
-                  style={[styles.awardText, progress.award === 'mastered' && { color: C.accent }]}>
-                  {award}
-                </Text>
-              </View>
-            )}
+            <View style={styles.summaryLeft}>
+              <Text style={styles.count}>
+                {t.games.raProgress(progress.earned, progress.total)}
+              </Text>
+              {award && (
+                <View style={[styles.award, progress.award === 'mastered' && styles.mastered]}>
+                  <Text
+                    style={[
+                      styles.awardText,
+                      progress.award === 'mastered' && { color: C.accent },
+                    ]}>
+                    {award}
+                  </Text>
+                </View>
+              )}
+            </View>
+            {/* Cómo se ordena la lista de abajo. */}
+            <ChipMenu
+              label={t.games.raSort[sort]}
+              active
+              accessibilityLabel={t.games.raSortBy}
+              items={SORTS.map((key) => ({
+                key,
+                label: t.games.raSort[key],
+                selected: sort === key,
+                onPress: () => {
+                  setSort(key);
+                  setShown(LATEST);
+                },
+              }))}
+            />
           </View>
           <View style={styles.bar}>
             <View
               style={[styles.barFill, { width: `${(progress.earned / progress.total) * 100}%` }]}
             />
           </View>
-          {/* Los últimos que sacaste, con nombre y fecha; después, todas las insignias. */}
-          {progress.earned > 0 && (
-            <View style={styles.latest}>
-              <Text style={styles.label}>{t.games.raLatest}</Text>
-              {progress.achievements
-                .filter((a) => a.earned)
-                .slice(0, LATEST)
-                .map((a) => (
-                  <View key={a.id} style={styles.latestRow}>
-                    <Image source={{ uri: raBadge(a.badge, true) }} style={styles.latestBadge} />
-                    <View style={styles.latestText}>
-                      <Text style={styles.pickedTitle} numberOfLines={1}>
-                        {a.title.toUpperCase()}
-                      </Text>
-                      <Text style={styles.label} numberOfLines={2}>
-                        {a.description}
-                      </Text>
-                    </View>
-                    <View style={styles.latestMeta}>
-                      <Text style={styles.label}>
-                        {a.earnedAt ? formatDate(a.earnedAt, now, lang).toUpperCase() : ''}
-                      </Text>
-                      <Text style={styles.label}>{t.games.raPointsShort(a.points)}</Text>
-                    </View>
+          {/* La lista de arriba (los últimos, los más raros…); después, todas las insignias. */}
+          <View style={styles.latest}>
+            <Text style={styles.label}>{t.games.raListTitle[sort]}</Text>
+            {listed.length === 0 ? (
+              <Text style={styles.label}>{t.games.raNothingHere}</Text>
+            ) : (
+              listed.slice(0, shown).map((a) => (
+                <Pressable
+                  key={a.id}
+                  onPress={() => showStats(a)}
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.latestRow, pressed && { opacity: 0.6 }]}>
+                  <Image
+                    source={{ uri: raBadge(a.badge, a.earned) }}
+                    style={[styles.latestBadge, !a.earned && { opacity: 0.45 }]}
+                  />
+                  <View style={styles.latestText}>
+                    <Text style={styles.pickedTitle} numberOfLines={1}>
+                      {a.title.toUpperCase()}
+                    </Text>
+                    <Text style={styles.label} numberOfLines={2}>
+                      {a.description}
+                    </Text>
                   </View>
-                ))}
-            </View>
-          )}
+                  <View style={styles.latestMeta}>
+                    <Text style={styles.label}>
+                      {sort === 'rarest' || sort === 'next'
+                        ? rateOf(a)
+                        : a.earnedAt
+                          ? formatDate(a.earnedAt, now, lang).toUpperCase()
+                          : ''}
+                    </Text>
+                    <Text style={styles.label}>{t.games.raPointsShort(a.points)}</Text>
+                  </View>
+                </Pressable>
+              ))
+            )}
+            {/* Ver más (de a 5) o volver a 5 cuando ya se ven todos. */}
+            {listed.length > LATEST && (
+              <Pressable
+                hitSlop={8}
+                onPress={() => setShown(shown >= listed.length ? LATEST : shown + LATEST)}
+                style={({ pressed }) => [styles.more, pressed && { opacity: 0.6 }]}>
+                <Text style={styles.moreText}>
+                  {shown >= listed.length ? t.games.showLess : t.games.showMore}
+                </Text>
+              </Pressable>
+            )}
+          </View>
           {/* El logro elegido en el bloque de abajo (al abrir, el último que sacaste). */}
           {selected && (
             <Appear key={selected.id}>
               <Pressable
-                onPress={() => setStatsOpen(true)}
+                onPress={() => selected && showStats(selected)}
                 accessibilityRole="button"
                 style={({ pressed }) => [styles.detail, pressed && { opacity: 0.7 }]}>
                 <Image
@@ -191,9 +262,9 @@ function Progress({ game, gameId }: { game: Game; gameId: number }) {
         style={styles.unlink}>
         <Text style={styles.label}>{t.games.raUnlink}</Text>
       </Pressable>
-      {selected && (
+      {statsFor && (
         <AchievementStats
-          achievement={selected}
+          achievement={statsFor}
           players={progress.players}
           open={statsOpen}
           onClose={() => setStatsOpen(false)}
@@ -371,14 +442,33 @@ function LinkPicker({ game, open, onClose }: { game: Game; open: boolean; onClos
 }
 
 const BADGE = 40;
-/** Cuántos logros recientes se listan arriba de las insignias. */
+/** Cuántos logros se listan arriba de las insignias (y cuántos más con "ver más"). */
 const LATEST = 5;
+
+/**
+ * Cómo ordenar la lista: los últimos que sacaste, tus más raros, los que más puntos dan, o los
+ * que te faltan empezando por los más fáciles.
+ */
+const SORTS = ['latest', 'rarest', 'points', 'next'] as const;
+type Sort = (typeof SORTS)[number];
 
 const styles = StyleSheet.create({
   link: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
   label: { fontFamily: Type.mono, fontSize: 11, color: C.textSecondary, letterSpacing: 1 },
   progress: { gap: Spacing.three },
-  summaryRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  summaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  summaryLeft: {
+    flexShrink: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
   count: { fontFamily: Type.mono, fontSize: 12, color: C.text, letterSpacing: 1 },
   award: {
     borderWidth: 1,
@@ -439,6 +529,15 @@ const styles = StyleSheet.create({
   detailTitle: { fontFamily: Type.dot, fontSize: 20, lineHeight: 24, color: C.text },
   detailDescription: { fontFamily: Type.mono, fontSize: 12, lineHeight: 17, color: C.text },
   latest: { gap: Spacing.three },
+  more: {
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 999,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.one + 2,
+  },
+  moreText: { fontFamily: Type.mono, fontSize: 10, color: C.text, letterSpacing: 1 },
   latestRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   latestBadge: {
     width: 44,

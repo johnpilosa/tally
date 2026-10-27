@@ -258,7 +258,16 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
   },
   tab: { flex: 1, alignItems: 'center', gap: Spacing.two },
-  tabLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
+  // El punto va colgado a la izquierda, sin ocupar lugar: así el nombre queda centrado bajo
+  // el ícono esté o no seleccionado.
+  tabLabelRow: { flexDirection: 'row', alignItems: 'center' },
   tabLabel: { fontFamily: Type.mono, fontSize: 10, letterSpacing: 1 },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.accent },
+  dot: {
+    position: 'absolute',
+    left: -5 - Spacing.two,
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: C.accent,
+  },
 });
