@@ -9,7 +9,7 @@ import { BlurOverlay } from '@/components/blur-overlay';
 import { GamesMenuButton } from '@/components/games-nav';
 import { ScreenHeader } from '@/components/screen-header';
 import { Colors, MaxContentWidth, Spacing, Type } from '@/constants/theme';
-import { useGames, type GameStatus } from '@/lib/games';
+import { GameStatuses, useGames, type GameStatus } from '@/lib/games';
 import { useFocusKey } from '@/hooks/use-focus-key';
 import { useI18n } from '@/lib/i18n';
 import {
@@ -173,7 +173,7 @@ export default function GameScreen() {
                   </Pressable>
                   {statusOpen && (
                     <View style={styles.statusMenu}>
-                      {(['playing', 'played'] as const).map((s, i) => (
+                      {GameStatuses.map((s, i) => (
                         <Appear key={s} options={{ direction: -1, index: i }}>
                           <Pressable
                             onPress={() => pickStatus(s)}

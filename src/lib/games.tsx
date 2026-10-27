@@ -16,7 +16,9 @@ export const RatingCategories = [
 ] as const;
 export type RatingCategory = (typeof RatingCategories)[number];
 
-export type GameStatus = 'playing' | 'played';
+/** Los estados de un juego, en orden: jugando, jugado y pendiente (para jugar después). */
+export const GameStatuses = ['playing', 'played', 'backlog'] as const;
+export type GameStatus = (typeof GameStatuses)[number];
 
 export type Insight = { id: string; text: string; createdAt: number };
 

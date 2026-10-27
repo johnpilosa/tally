@@ -14,14 +14,14 @@ import { ListPicker } from '@/components/list-picker';
 import { RemovePopup } from '@/components/remove-popup';
 import { ScreenHeader, ScreenTitle } from '@/components/screen-header';
 import { Colors, Layout, Spacing, Type } from '@/constants/theme';
-import { useGames, type Game } from '@/lib/games';
+import { GameStatuses, useGames, type Game, type GameStatus } from '@/lib/games';
 import { useFocusKey } from '@/hooks/use-focus-key';
 import { useI18n } from '@/lib/i18n';
 import { yearOf } from '@/lib/wiki-games';
 
 const C = Colors.dark;
 
-type Filter = 'all' | 'playing' | 'played' | 'favorites';
+type Filter = 'all' | GameStatus | 'favorites';
 
 /** Mis juegos: la lista, con filtros por estado, favoritos y listas propias. */
 export default function MyGamesScreen() {
@@ -52,14 +52,13 @@ export default function MyGamesScreen() {
 
   const shown = games.filter((g) => {
     if (listFilter === 'all') return true;
-    if (listFilter === 'playing' || listFilter === 'played') return g.status === listFilter;
+    if (listFilter !== 'favorites') return g.status === listFilter;
     return g.favorite;
   });
 
   const filters: { id: Filter; label: string }[] = [
     { id: 'all', label: t.games.all },
-    { id: 'playing', label: t.games.playing },
-    { id: 'played', label: t.games.played },
+    ...GameStatuses.map((st) => ({ id: st, label: t.games[st] })),
     { id: 'favorites', label: t.games.favorites },
   ];
 

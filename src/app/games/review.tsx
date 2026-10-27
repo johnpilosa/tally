@@ -15,7 +15,7 @@ import { RAAchievements } from '@/components/ra-achievements';
 import { ScreenHeader } from '@/components/screen-header';
 import { StarRating } from '@/components/star-rating';
 import { Colors, Layout, MaxContentWidth, Spacing, Type } from '@/constants/theme';
-import { newId, RatingCategories, reviewOf, useGames, type Game } from '@/lib/games';
+import { GameStatuses, newId, RatingCategories, reviewOf, useGames, type Game } from '@/lib/games';
 import { useNow } from '@/hooks/use-now';
 import { useI18n } from '@/lib/i18n';
 import { formatDate } from '@/lib/time';
@@ -85,7 +85,7 @@ function Review({ game }: { game: Game }) {
                 label={t.games[game.status]}
                 active
                 accessibilityLabel={t.games.statusLabel}
-                items={(['playing', 'played'] as const).map((st) => ({
+                items={GameStatuses.map((st) => ({
                   key: st,
                   label: t.games[st],
                   selected: game.status === st,
