@@ -264,3 +264,27 @@ export const FilterSwitch = {
    */
   leave: 140,
 };
+
+/* ─────────────────────────── HUNT ─────────────────────────── */
+
+/** La caza de logros: el mazo de tarjetas, el botón de revisar y el festejo. */
+export const Hunt = {
+  /** Qué parte del ancho hay que arrastrar una tarjeta para que salga (0 a 1). */
+  swipeThreshold: 0.28,
+  /** Cuánto gira la tarjeta al arrastrarla hasta el borde, en grados. */
+  swipeTilt: 12,
+  /** Cuánto tarda en salir volando al soltarla. */
+  flyOut: 220,
+  /** Cuánto tarda en darse vuelta al tocarla. */
+  flip: 260,
+  /** Cuánto hay que mantener presionado "revisar", en milisegundos. */
+  holdToCheck: 650,
+  /** El sello de "obtenido": cuánto tarda en estamparse y cuánto queda antes de pasar al siguiente. */
+  stamp: 260,
+  celebrate: 1600,
+  /** Las esquirlas del festejo: cuántas y cuán lejos llegan, en puntos. */
+  particles: 18,
+  particleDistance: 140,
+  /** El temblor de "todavía no". */
+  shake: { distance: 10, times: 3, stepDuration: 50 },
+};

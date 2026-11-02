@@ -61,6 +61,8 @@ export type RAProgress = {
   award: string | null;
   /** Cuántas personas jugaron este juego (para sacar el % de cada logro). */
   players: number;
+  /** La guía del juego en RetroAchievements, si tiene. */
+  guideUrl: string | null;
   achievements: RAAchievement[];
 };
 
@@ -138,6 +140,7 @@ export async function fetchProgress(account: RAAccount, gameId: number): Promise
     HighestAwardKind: string | null;
     NumDistinctPlayers?: number;
     NumDistinctPlayersCasual?: number;
+    GuideURL?: string | null;
     Achievements: Record<
       string,
       {
@@ -165,6 +168,7 @@ export async function fetchProgress(account: RAAccount, gameId: number): Promise
     total: data.NumAchievements,
     award: data.HighestAwardKind ?? null,
     players: data.NumDistinctPlayers ?? data.NumDistinctPlayersCasual ?? 0,
+    guideUrl: data.GuideURL || null,
     // Primero los obtenidos, del más reciente al más antiguo; después los que faltan, en el
     // orden del juego.
     achievements: Object.values(data.Achievements ?? {})

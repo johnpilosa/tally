@@ -39,6 +39,22 @@ const SYNCED: Record<string, { empty: unknown; merge: (local: any, remote: any) 
   },
   'tallies:v1': { empty: [], merge: (local, remote) => unionById(remote, local) },
   'customIcons:v1': { empty: [], merge: (local, remote) => unionById(remote, local) },
+  'hunt:v1': {
+    empty: { gameId: null, targets: [], skipped: [], log: [] },
+    merge: (local, remote) => ({
+      ...remote,
+      log: [
+        ...(remote.log ?? []),
+        ...(local.log ?? []).filter(
+          (l: { achievementId: number; gameId: string }) =>
+            !(remote.log ?? []).some(
+              (r: { achievementId: number; gameId: string }) =>
+                r.achievementId === l.achievementId && r.gameId === l.gameId,
+            ),
+        ),
+      ],
+    }),
+  },
 };
 const KEYS = Object.keys(SYNCED);
 

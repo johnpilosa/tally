@@ -20,6 +20,7 @@ const ITEM_GAP = Spacing.two;
 const APPS = [
   { id: 'tally', route: '/' },
   { id: 'games', route: '/games' },
+  { id: 'hunt', route: '/hunt' },
 ] as const;
 
 export type AppId = (typeof APPS)[number]['id'];
